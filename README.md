@@ -1,7 +1,7 @@
 # FireAddons
 
 This is mod for TLD 1.83+ 
-It allows to use Lantern as fire starter and at leevl 3 firestarting tinder can be used as fuel which will add buffs there.
+It allows to use Lantern as fire starter and at level 3 firestarting tinder can be used as fuel which will add buffs there.
 
 ## Settings
 

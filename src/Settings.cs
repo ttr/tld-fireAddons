@@ -68,7 +68,7 @@ namespace FireAddons
 		[Description("Suggested value 2")]
 		[Slider(-20, 10)]
 		public int tinderBonusPaper = 2;
-		
+
 		[Name("Cash: fire start Modification")]
 		[Description("Suggested value 2")]
 		[Slider(-20, 10)]
@@ -90,8 +90,8 @@ namespace FireAddons
 		[Description("Suggested value 10")]
 		[Slider(0, 20)]
 		public int flintDegredation = 12;
-		
-		
+
+
 
 
 		protected override void OnChange(FieldInfo field, object oldValue, object newValue)

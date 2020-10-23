@@ -45,6 +45,7 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
+				gi.m_FireStarterItem.m_OnUseSoundEvent = "Play_CraftingGeneric";
 				// gi.m_Type = GearTypeEnum.Firestarting;
 
 			}
@@ -120,7 +121,7 @@ namespace FireAddons
 				gi.m_FuelSourceItem.m_HeatIncrease = 5; // deg C
 				// gi.m_FuelSourceItem.m_FireAgeMinutesBeforeAdding
 			}
-			MelonLogger.Log(gi.name + ": add fuel: " + value + " " + Settings.options.tinderFuel);
+			//MelonLogger.Log(gi.name + ": add fuel: " + value + " " + Settings.options.tinderFuel);
 			gi.m_FuelSourceItem.m_BurnDurationHours += value;
 			gi.m_FuelSourceItem.m_FireStartDurationModifier += value;
 			gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);

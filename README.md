@@ -24,6 +24,3 @@ All those values are added on pickup/discovery of item - if used in current save
 On Scene change (so also game load) all inventory tinder is being reset, so they will not act as fuel. To mitigate this, drop all stack on a floor and pick it up (works most of time).
 This is bit annoying but not planing to fix it right now.
 
-Another issue is fire started by lantern - if it's started into embers, it's good, just add fuel. If it's burning two things usually happens:
-- temperature output is always 0 - regardless of fuell added (still You can cook)
-- animation of fire is not displayed until fuel is added.

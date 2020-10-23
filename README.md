@@ -13,8 +13,7 @@ mechanical - You use mechanical igniter to generate spark that you use to start 
 Both are possible in real life - cover of lantern is user removable (for refuel, wick replace, cleanig), so it should not even count towards degredation. 
 However, since there was no easy way to consume fuel while doing this, idea is that as balance You should set degredation to some positive value.
 
-Uing Lantern will take most time (more than flint) as you will deassembly it (in theory).
-It also start fire only into embers (can't figure it why).
+Using Lantern will take most time (more than flint) as you will deassembly it (in theory).
 
 ### Tinder.
 TInder as fuel - when reach of level 3 of firestarting, tinder is not needed for starting fires, therfore tinder will be used as fuel and it will attribiute to starting fire rate.
@@ -24,3 +23,7 @@ Because it goes in place of fuel, Tinder base start offset is for compensate thi
 All those values are added on pickup/discovery of item - if used in current saves, all items will not have new values. Same goes when reaching lvl 3 - only new tinder will be used as fuel.
 On Scene change (so also game load) all inventory tinder is being reset, so they will not act as fuel. To mitigate this, drop all stack on a floor and pick it up (works most of time).
 This is bit annoying but not planing to fix it right now.
+
+Another issue is fire started by lantern - if it's started into embers, it's good, just add fuel. If it's burning two things usually happens:
+- temperature output is always 0 - regardless of fuell added (still You can cook)
+- animation of fire is not displayed until fuel is added.

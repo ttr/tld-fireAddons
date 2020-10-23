@@ -14,9 +14,9 @@ namespace FireAddons
 		}
 
 		internal static void MyApplyChanges(GearItem gi) {
-			
+
 			// Tinders
-			// MelonLogger.Log("all: " + gi.name);
+			//MelonLogger.Log("all: " + gi.name);
             if ((bool)(Settings.options.tinderAsFuel && (gi.name.Contains("GEAR_CattailTinder") ||
 				gi.name.Contains("GEAR_Tinder") ||
 				gi.name.Contains("GEAR_BarkTinder") ||
@@ -29,13 +29,13 @@ namespace FireAddons
 				ModifyTinder(gi);
 				//MelonLogger.Log("tinder: " + gi.name);
 			}
-           
+
 			// Lamp as firestarter
 			if ((bool)(Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp")))
 			{
 				// MelonLogger.Log("lamp: " + gi.name);
 				if (!gi.m_FireStarterItem)
-				{	
+				{
 					//MelonLogger.Log("lamp: add firestarter");
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
@@ -43,7 +43,7 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lanternDegredation;
 				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
-				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty; 
+				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
 			}
 
 			// Flint
@@ -59,7 +59,7 @@ namespace FireAddons
 			}
 			if (gi.m_FireStarterItem)
             {
-				
+
 				//MelonLogger.Log("FS stat: " + gi.name + " " + gi.m_FireStarterItem.m_SecondsToIgniteTinder + " " + gi.m_FireStarterItem.m_SecondsToIgniteTorch + " " + gi.m_FireStarterItem.m_FireStartSkillModifier + " " + gi.m_FireStarterItem.m_ConditionDegradeOnUse);
             }
 			if (gi.m_FuelSourceItem)

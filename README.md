@@ -19,4 +19,5 @@ Because it goes in place of fuel, Tinder base start offset is for compensate thi
 
 ## Notes.
 All those values are added on pickup/discovery of item - if used in current saves, all items will not have new values. Same goes when reaching lvl 3 - only new tinder will be used as fuel.
-One option that can work is to drop on a floor all tinder and pick it up.
+On Scene chnage (so also game load) all inventory tinder is being reset, so they will not act as fuel. To mitigate this, drop all stack on a floor and pick it up (tested in building,s should work outside also).
+This is bit annoying but not planing to fix it right now.

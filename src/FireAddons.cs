@@ -40,11 +40,13 @@ namespace FireAddons
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConsumeOnUse = false;
-				gi.m_FireStarterItem.m_FireStartDurationModifier = 1;
+				gi.m_FireStarterItem.m_FireStartDurationModifier = 60;
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lanternDegredation;
 				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
+				// gi.m_Type = GearTypeEnum.Firestarting;
+
 			}
 
 			// Flint
@@ -57,11 +59,12 @@ namespace FireAddons
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
+
 			}
 			if (gi.m_FireStarterItem)
             {
 
-				//MelonLogger.Log("FS stat: " + gi.name + " " + gi.m_FireStarterItem.m_SecondsToIgniteTinder + " " + gi.m_FireStarterItem.m_SecondsToIgniteTorch + " " + gi.m_FireStarterItem.m_FireStartSkillModifier + " " + gi.m_FireStarterItem.m_ConditionDegradeOnUse);
+				//MelonLogger.Log("FS stat: " + gi.name + " " + gi.m_FireStarterItem.m_SecondsToIgniteTinder + " " + gi.m_FireStarterItem.m_SecondsToIgniteTorch + " " + gi.m_FireStarterItem.m_FireStartSkillModifier + " " + gi.m_FireStarterItem.m_ConditionDegradeOnUse + " " + gi.m_FireStarterItem.m_FireStartDurationModifier);
             }
 			if (gi.m_FuelSourceItem)
 			{

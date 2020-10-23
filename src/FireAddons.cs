@@ -27,7 +27,7 @@ namespace FireAddons
                 )
             {
 				ModifyTinder(gi);
-				// MelonLogger.Log("tinder: " + gi.name);
+				//MelonLogger.Log("tinder: " + gi.name);
 			}
            
 			// Lamp as firestarter
@@ -65,7 +65,7 @@ namespace FireAddons
 			if (gi.m_FuelSourceItem)
 			{
 
-				//MelonLogger.Log("FU stat: " + gi.name + " " + gi.m_FuelSourceItem.m_FireStartSkillModifier + " " + gi.m_FuelSourceItem.m_FireStartDurationModifier + " " + gi.m_FuelSourceItem.m_HeatIncrease);
+				//MelonLogger.Log("FU stat: " + gi.name + " " + gi.m_FuelSourceItem.m_FireStartSkillModifier + " " + gi.m_FuelSourceItem.m_FireStartDurationModifier + " " + gi.m_FuelSourceItem.m_HeatIncrease + " " + gi.m_FuelSourceItem.m_IsTinder + " " + GameManager.GetSkillFireStarting().TinderRequired());
 			}
 		}
 
@@ -120,7 +120,7 @@ namespace FireAddons
 			gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
 			gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
 
-			if (!GameManager.GetSkillFireStarting().TinderRequired())
+			if (!GameManager.GetSkillFireStarting().TinderRequired() || Settings.options.tinderAsFuelForced)
             {
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}

@@ -1,7 +1,7 @@
 ﻿using MelonLoader;
 using UnityEngine;
 using Harmony;
-
+using System;
 
 namespace FireAddons
 {
@@ -40,6 +40,7 @@ namespace FireAddons
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConsumeOnUse = false;
+				gi.m_FireStarterItem.m_FireStartDurationModifier = 1;
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lanternDegredation;
 				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
@@ -65,7 +66,7 @@ namespace FireAddons
 			if (gi.m_FuelSourceItem)
 			{
 
-				//MelonLogger.Log("FU stat: " + gi.name + " " + gi.m_FuelSourceItem.m_FireStartSkillModifier + " " + gi.m_FuelSourceItem.m_FireStartDurationModifier + " " + gi.m_FuelSourceItem.m_HeatIncrease + " " + gi.m_FuelSourceItem.m_IsTinder + " " + GameManager.GetSkillFireStarting().TinderRequired());
+				//MelonLogger.Log("FU stat: " + gi.name + " " + gi.m_FuelSourceItem.m_FireStartSkillModifier + " " + gi.m_FuelSourceItem.m_FireStartDurationModifier + " " + gi.m_FuelSourceItem.m_BurnDurationHours + " " + gi.m_FuelSourceItem.m_HeatIncrease + " " + gi.m_FuelSourceItem.m_IsTinder + " " + gi.m_FuelSourceItem.m_FireAgeMinutesBeforeAdding);
 			}
 		}
 
@@ -106,15 +107,17 @@ namespace FireAddons
 		}
 		private static void ModifyTinder(GearItem gi)
 		{
-			float value = Settings.options.tinderFuel / 60;
+			float value = (float)Settings.options.tinderFuel / 60;
 			if (!gi.m_FuelSourceItem)
 			{
-				//MelonLogger.Log(gi.name + ": add fuelSource: " + value);
+				//MelonLogger.Log(gi.name + ": add fuelSource: " + value + " " + Settings.options.tinderFuel);
 				gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
 				gi.m_FuelSourceItem.m_BurnDurationHours = value;
 				gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
+				gi.m_FuelSourceItem.m_HeatIncrease = 5; // deg C
+				// gi.m_FuelSourceItem.m_FireAgeMinutesBeforeAdding
 			}
-			//MelonLogger.Log(gi.name + ": add fuel: " + value);
+			MelonLogger.Log(gi.name + ": add fuel: " + value + " " + Settings.options.tinderFuel);
 			gi.m_FuelSourceItem.m_BurnDurationHours += value;
 			gi.m_FuelSourceItem.m_FireStartDurationModifier += value;
 			gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);

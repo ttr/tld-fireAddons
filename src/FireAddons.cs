@@ -1,7 +1,6 @@
 ﻿using MelonLoader;
 using UnityEngine;
-using Harmony;
-using System;
+
 
 namespace FireAddons
 {
@@ -74,7 +73,7 @@ namespace FireAddons
 			}
 		}
 
-		private static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
+		internal  static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
 		{
 
 			if (fs.name.Contains("GEAR_NewsprintRoll"))
@@ -109,6 +108,7 @@ namespace FireAddons
 			MelonLogger.LogWarning("MISSING TINDER " + fs.name);
 			return 0;
 		}
+
 		private static void ModifyTinder(GearItem gi)
 		{
 			float value = (float)Settings.options.tinderFuel / 60;
@@ -132,5 +132,7 @@ namespace FireAddons
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}
 		}
+
+		internal static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 	}
 }

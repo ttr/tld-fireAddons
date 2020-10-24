@@ -13,11 +13,24 @@ mechanical - You use mechanical igniter to generate spark that you use to start 
 Both are possible in real life - cover of lantern is user removable (for refuel, wick replace, cleanig), so it should not even count towards degredation. 
 However, since there was no easy way to consume fuel while doing this, idea is that as balance You should set degredation to some positive value.
 
-Using Lantern will take most time (more than flint) as you will deassembly it (in theory).
+Using Lantern will take most time (more than flint) as you will neet to take it cover off (in theory).
 
 ### Tinder.
 TInder as fuel - when reach of level 3 of firestarting, tinder is not needed for starting fires, therfore tinder will be used as fuel and it will attribiute to starting fire rate.
 Because it goes in place of fuel, Tinder base start offset is for compensate this.
+
+### Flint and steel
+Flint is in game but hidden (and no icon) and normally is not crafteble nor lootable.
+However, Whetstone (sharpening stone) can be used as flint in real life.
+The steel part - this needs to be high carbon steel, and not aloys. In theory smelting prybar (which is hard steel) with coal will carbonize it.
+That (over simplistic) theory can actually give us flint and steel as firestarter.
+
+It's degredation should be keept low-ish - around 0.5-2 - as prybar and whetstone are rare and finite
+
+Also, if game had shovel as lootable, that could be more realistic flint.
+
+Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
+
 
 ## Notes / Issues.
 All those values are added on pickup/discovery of item - if used in current saves, all items will not have new values. Same goes when reaching lvl 3 - only new tinder will be used as fuel.

@@ -87,9 +87,9 @@ namespace FireAddons
 
 		[Section("Other")]
 		[Name("Flint degredation")]
-		[Description("Suggested value 10")]
-		[Slider(0, 20)]
-		public int flintDegredation = 12;
+		[Description("Suggested value 0.2. Can be crafted from prybar, coal and whetstone.")]
+		[Slider(0f, 20f)]
+		public float flintDegredation = 0.2f;
 
 
 

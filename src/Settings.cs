@@ -85,7 +85,14 @@ namespace FireAddons
 		public int tinderBonusCattail = 1;
 
 
-		[Section("Other")]
+		[Section("Flint")]
+		[Name("Flint crafting enabled")]
+		public bool flintEnable = true;
+
+		[Name("Flint resmelt enabled")]
+		[Description("allow re-smelting flints steel as repair process")]
+		public bool flintSmeltEnable = true;
+
 		[Name("Flint degredation")]
 		[Description("Suggested value 0.2. Can be crafted from prybar, coal and whetstone.")]
 		[Slider(0f, 20f)]
@@ -141,6 +148,16 @@ namespace FireAddons
 				SetFieldVisible(nameof(tinderBonusCash), false);
 				SetFieldVisible(nameof(tinderBonusBark), false);
 
+			}
+			if (flintEnable)
+            {
+				SetFieldVisible(nameof(flintSmeltEnable), true);
+				SetFieldVisible(nameof(flintDegredation), true);
+			}
+			else
+            {
+				SetFieldVisible(nameof(flintSmeltEnable), false);
+				SetFieldVisible(nameof(flintDegredation), false);
 			}
 		}
 	}

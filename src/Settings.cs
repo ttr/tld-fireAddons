@@ -39,10 +39,15 @@ namespace FireAddons
 		[Description("In case You're lev3 and new items are still tinder")]
 		public bool tinderAsFuelForced = false;
 
-		[Name("Tinder fuel value")]
+		[Name("Tinder fuel time")]
 		[Description("In minutes, suggested 5")]
 		[Slider(1, 60)]
 		public int tinderFuel = 5;
+
+		[Name("Tinder fuel temperature")]
+		[Description("In Celsius, suggested 5")]
+		[Slider(1, 60)]
+		public int tinderFueldeg = 5;
 
 		[Name("Tinder base fire start offset")]
 		[Description("Suggested value 10 - this is to compensate lack of proper fuel. Book is 30, softwood is 10. This will be at level 3 so your base is higher.")]

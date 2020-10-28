@@ -16,8 +16,9 @@ However, since there was no easy way to consume fuel while doing this, idea is t
 Using Lantern will take most time (more than flint) as you will neet to take it cover off (in theory).
 
 ### Tinder.
-TInder as fuel - when reach of level 3 of firestarting, tinder is not needed for starting fires, therfore tinder will be used as fuel and it will attribiute to starting fire rate.
+Tinder as fuel - when reach of level 3 of firestarting, tinder is not needed for starting fires, therfore tinder will be used as fuel and it will attribiute to starting fire rate.
 Because it goes in place of fuel, Tinder base start offset is for compensate this.
+Regardless of level, Tinder can be added to burning fire.
 
 ### Flint and steel
 Flint is in game but hidden (and no icon) and normally is not crafteble nor lootable.
@@ -31,9 +32,5 @@ Also, if game had shovel as lootable, that could be more realistic flint.
 
 Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
 
-
 ## Notes / Issues.
-All those values are added on pickup/discovery of item - if used in current saves, all items will not have new values. Same goes when reaching lvl 3 - only new tinder will be used as fuel.
-On Scene change (so also game load) all inventory tinder is being reset, so they will not act as fuel. To mitigate this, drop all stack on a floor and pick it up (works most of time).
-This is bit annoying but not planing to fix it right now.
-
+Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)

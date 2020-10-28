@@ -15,23 +15,8 @@ namespace FireAddons
 
 		internal static void MyApplyChanges(GearItem gi) {
 
-			// Tinders
-			//MelonLogger.Log("all: " + gi.name);
-            if ((bool)(Settings.options.tinderAsFuel && (gi.name.Contains("GEAR_CattailTinder") ||
-				gi.name.Contains("GEAR_Tinder") ||
-				gi.name.Contains("GEAR_BarkTinder") ||
-                gi.name.Contains("GEAR_NewsprintRoll") ||
-                gi.name.Contains("GEAR_PaperStack") ||
-                gi.name.Contains("GEAR_Newsprint") ||
-                gi.name.Contains("GEAR_CashBundle")))
-                )
-            {
-				ModifyTinder(gi);
-				//MelonLogger.Log("tinder: " + gi.name);
-			}
-
 			// Lamp as firestarter
-			if ((bool)(Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp")))
+			if (Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp"))
 			{
 				// MelonLogger.Log("lamp: " + gi.name);
 				if (!gi.m_FireStarterItem)
@@ -110,27 +95,38 @@ namespace FireAddons
 			MelonLogger.LogWarning("MISSING TINDER " + fs.name);
 			return 0;
 		}
-
-		private static void ModifyTinder(GearItem gi)
-		{
-			float value = (float)Settings.options.tinderFuel / 60;
-			if (!gi.m_FuelSourceItem)
-			{
-				//MelonLogger.Log(gi.name + ": add fuelSource: " + value + " " + Settings.options.tinderFuel);
-				gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
-				gi.m_FuelSourceItem.m_BurnDurationHours = value;
-				gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
-				gi.m_FuelSourceItem.m_HeatIncrease = 5; // deg C
-				// gi.m_FuelSourceItem.m_FireAgeMinutesBeforeAdding
-			}
-			//MelonLogger.Log(gi.name + ": add fuel: " + value + " " + Settings.options.tinderFuel);
-			gi.m_FuelSourceItem.m_BurnDurationHours += value;
-			gi.m_FuelSourceItem.m_FireStartDurationModifier += value;
-			gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
-			gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
-
-			if (!GameManager.GetSkillFireStarting().TinderRequired() || Settings.options.tinderAsFuelForced)
+		internal static bool IsNamedTinder(GearItem gi)
+        {
+			if (gi.name.Contains("GEAR_CattailTinder") ||
+				gi.name.Contains("GEAR_Tinder") ||
+				gi.name.Contains("GEAR_BarkTinder") ||
+				gi.name.Contains("GEAR_NewsprintRoll") ||
+				gi.name.Contains("GEAR_PaperStack") ||
+				gi.name.Contains("GEAR_Newsprint") ||
+				gi.name.Contains("GEAR_CashBundle"))
             {
+				return true;
+            }
+			return false;
+		}
+
+		internal static void ModifyTinder(GearItem gi)
+		{
+			// if we modified it already, skip, otherwise You will have infinite burn time ;)
+			if (gi.m_FuelSourceItem.m_IsTinder)
+			{
+				float value = (float)Settings.options.tinderFuel / 60;
+				if (!gi.m_FuelSourceItem)
+				{
+					gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
+					gi.m_FuelSourceItem.m_BurnDurationHours = value;
+					gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
+				}
+				gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.tinderFueldeg; // deg C
+				gi.m_FuelSourceItem.m_BurnDurationHours += value;
+				gi.m_FuelSourceItem.m_FireStartDurationModifier += value;
+				gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
+				gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}
 		}

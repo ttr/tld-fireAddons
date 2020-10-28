@@ -60,7 +60,7 @@ namespace FireAddons
             {
                 private static void Prefix(Panel_FeedFire __instance)
                 {
-                    MelonLogger.Log("onstartfire");
+
                     if (!GameManager.GetSkillFireStarting().TinderRequired())
                     {
                         MelonLogger.Log("tinder not required");
@@ -75,7 +75,7 @@ namespace FireAddons
                                 {
                                     if (FireAddons.IsNamedTinder(gearItem))
                                     {
-                                        MelonLogger.Log("Tinder:"+ gearItem);
+
                                         FireAddons.ModifyTinder(gearItem);
 
                                     }
@@ -104,7 +104,7 @@ namespace FireAddons
                             {
                                 if (FireAddons.IsNamedTinder(gearItem))
                                 {
-                                    gearItem.m_FuelSourceItem.m_IsTinder = false;
+                                    FireAddons.ModifyTinder(gearItem);
                                 }
                             }
                         }

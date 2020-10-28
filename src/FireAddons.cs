@@ -115,16 +115,14 @@ namespace FireAddons
 			// if we modified it already, skip, otherwise You will have infinite burn time ;)
 			if (gi.m_FuelSourceItem.m_IsTinder)
 			{
-				float value = (float)Settings.options.tinderFuel / 60;
+				float value = Settings.options.tinderFuel / 60f;
 				if (!gi.m_FuelSourceItem)
 				{
 					gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
-					gi.m_FuelSourceItem.m_BurnDurationHours = value;
-					gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
 				}
 				gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.tinderFueldeg; // deg C
-				gi.m_FuelSourceItem.m_BurnDurationHours += value;
-				gi.m_FuelSourceItem.m_FireStartDurationModifier += value;
+				gi.m_FuelSourceItem.m_BurnDurationHours = value;
+				gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
 				gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
 				gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
 				gi.m_FuelSourceItem.m_IsTinder = false;

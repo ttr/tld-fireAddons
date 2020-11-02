@@ -1,5 +1,6 @@
 ﻿using Harmony;
 using MelonLoader;
+using UnityEngine;
 //using System.Collections.Generic;
 
 namespace FireAddons
@@ -52,6 +53,28 @@ namespace FireAddons
                             }
                         }
             */
+            [HarmonyPatch(typeof(Panel_FeedFire), "OnFeedFire")]
+            internal class Panel_FeedFire_OnFeedFire
+            {
+                private static void Postfix(Panel_FeedFire __instance)
+                {
+                    FireAddons.FeedFire(__instance);
+                }
+            }
+
+            [HarmonyPatch(typeof(Fire), "Update")]
+            internal class Fire_Update_Prefix
+            {
+                private static void Prefix(Fire __instance)
+                {
+                    if (!GameManager.m_IsPaused && Settings.options.embersSystem)
+                    {
+                        FireAddons.CalculateEmbers(__instance);
+                    }
+                }
+
+            }
+
             // based on Fire_RV mod by Deus131
             // will allow use tinder as starting fuel
             [HarmonyPatch(typeof(Panel_FireStart))]
@@ -63,7 +86,6 @@ namespace FireAddons
 
                     if (!GameManager.GetSkillFireStarting().TinderRequired())
                     {
-                        MelonLogger.Log("tinder not required");
                         Inventory inventoryComponent = GameManager.GetInventoryComponent();
                         foreach (GearItemObject item in inventoryComponent.m_Items)
                         {
@@ -87,7 +109,7 @@ namespace FireAddons
             }
 
 
-            // from Fire_RV mod by Deus131
+            // based on Fire_RV mod by Deus131
             [HarmonyPatch(typeof(Panel_FeedFire), "RefreshFuelSources")]
             internal static class Panel_FeedFire_RefreshFuelSources
             {
@@ -106,6 +128,10 @@ namespace FireAddons
                                 {
                                     FireAddons.ModifyTinder(gearItem);
                                 }
+                            }
+                            if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
+                                {
+                                FireAddons.ModifyWater(gearItem, true);
                             }
                         }
                     }
@@ -129,9 +155,15 @@ namespace FireAddons
                                 }
                             }
                         }
+                        if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
+                        {
+                            FireAddons.ModifyWater(gearItem, false);
+                        }
                     }
                 }
+
             }
+
         }
     }
 

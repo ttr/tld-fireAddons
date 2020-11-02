@@ -18,10 +18,8 @@ namespace FireAddons
 			// Lamp as firestarter
 			if (Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp"))
 			{
-				// MelonLogger.Log("lamp: " + gi.name);
 				if (!gi.m_FireStarterItem)
 				{
-					//MelonLogger.Log("lamp: add firestarter");
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConsumeOnUse = false;
@@ -31,33 +29,20 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
 				gi.m_FireStarterItem.m_OnUseSoundEvent = "Play_SNDACTIONFIREFLINTLOOP";
-				// gi.m_Type = GearTypeEnum.Firestarting;
 
 			}
 
 			// Flint
 			if (gi.name.Contains("GEAR_FlintAndSteel"))
 			{
-				//MelonLogger.Log("flint: " + gi.name);
 				if (!gi.m_FireStarterItem)
 				{
-					//MelonLogger.Log("Flint: add firestarter");
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
 				gi.m_StartCondition = GearStartCondition.Perfect;
-				gi.m_WeightKG = 1.5f;
+				gi.m_WeightKG = 1.5f; // combined weight of components it's made.
             }
-			if (gi.m_FireStarterItem)
-            {
-
-				//MelonLogger.Log("FS stat: " + gi.name + " " + gi.m_FireStarterItem.m_SecondsToIgniteTinder + " " + gi.m_FireStarterItem.m_SecondsToIgniteTorch + " " + gi.m_FireStarterItem.m_FireStartSkillModifier + " " + gi.m_FireStarterItem.m_ConditionDegradeOnUse + " " + gi.m_FireStarterItem.m_FireStartDurationModifier);
-            }
-			if (gi.m_FuelSourceItem)
-			{
-
-				//MelonLogger.Log("FU stat: " + gi.name + " " + gi.m_FuelSourceItem.m_FireStartSkillModifier + " " + gi.m_FuelSourceItem.m_FireStartDurationModifier + " " + gi.m_FuelSourceItem.m_BurnDurationHours + " " + gi.m_FuelSourceItem.m_HeatIncrease + " " + gi.m_FuelSourceItem.m_IsTinder + " " + gi.m_FuelSourceItem.m_FireAgeMinutesBeforeAdding);
-			}
 		}
 
 		private static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
@@ -128,12 +113,29 @@ namespace FireAddons
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}
 		}
+		internal static void ModifyWater(GearItem gi, bool state)
+        {
+			if (state)
+			{
+				gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
+				gi.m_FuelSourceItem.m_HeatIncrease = 0;
+				gi.m_FuelSourceItem.m_BurnDurationHours = 0;
+				gi.m_FuelSourceItem.m_IsTinder = false;
+				gi.m_FuelSourceItem.m_FireStartDurationModifier = 0;
+				gi.m_FuelSourceItem.m_FireStartSkillModifier = 0;
+			}
+			else
+            {
+				gi.m_FuelSourceItem = null;
+            }
 
+		}
 		internal static void Blueprints()
         {
 			// Buy 'zeobviouslyfakeacc' a beer as i've used his tincan improvements code
 			if (Settings.options.flintEnable) {
 				// create bp
+
 				BlueprintItem bp_flint= GameManager.GetBlueprints().AddComponent<BlueprintItem>();
 				// Inputs
 				bp_flint.m_RequiredGear = new Il2CppReferenceArray<GearItem>(3) { [0] = GetGearItemPrefab("GEAR_Prybar"), [1] = GetGearItemPrefab("GEAR_SharpeningStone"), [2] = GetGearItemPrefab("GEAR_Coal") };
@@ -189,5 +191,94 @@ namespace FireAddons
 		}
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
+
+		internal static void CalculateEmbers(Fire __instance)
+        {
+			if (__instance.m_HeatSource.IsTurnedOn() && __instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
+			{
+
+				float currTemp = __instance.GetCurrentTempIncrease();
+				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
+
+				// aways use embers state
+				if (!__instance.m_UseEmbers)
+				{
+					__instance.m_UseEmbers = true;
+					__instance.m_DurationSecondsToReduceToEmbers = 0;
+				}
+
+				// reset embers timer if burning
+				if (__instance.m_EmberTimer != 0 && remSec > 0 )
+                {
+					__instance.m_EmberTimer = 0;
+				}
+
+				if (currTemp > Settings.options.embersBunoutTemp && __instance.m_EmberDurationSecondsTOD > 0f)
+				{
+					float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
+					float burnRatio = Mathf.InverseLerp(Settings.options.embersBunoutTemp, 80f, currTemp);
+
+					float maxBurnHour = Settings.options.embersBunoutRatio * Settings.options.embersTime;
+					float variedBurnSec = (maxBurnHour * burnRatio) * 3600;
+
+					// remove embers per tick
+					__instance.m_EmberDurationSecondsTOD -= variedBurnSec * deltaTime * Settings.options.embersFuelEx;
+					if ( __instance.m_EmberDurationSecondsTOD < 0f)
+                    {
+						__instance.m_EmberDurationSecondsTOD = 0;
+					}
+					else
+                    {
+						__instance.m_MaxOnTODSeconds += variedBurnSec * deltaTime;
+					}
+				}
+
+				//	GameObject obj = __instance.transform.GetParent()?.gameObject;
+				//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
+
+			}
+		}
+		internal static void FeedFire(Panel_FeedFire __instance)
+		{
+
+			Fire _fire = __instance.m_Fire;
+			GearItem fuel = __instance.GetSelectedFuelSource();
+			// cool off fire with water
+
+			if (fuel.name.ToLower().Contains("recycledcan") || fuel.name.ToLower().Contains("cookingpot"))
+			{
+
+				GearItem gi_wt = GameManager.GetInventoryComponent().GetPotableWaterSupply();
+				if (gi_wt.m_WaterSupply.m_VolumeInLiters >= 0.25f && _fire.m_FuelHeatIncrease > Settings.options.waterTempRemoveDeg) {
+					gi_wt.m_WaterSupply.m_VolumeInLiters -= 0.25f;
+					_fire.m_HeatSource.m_MaxTempIncrease -= Settings.options.waterTempRemoveDeg;
+					_fire.m_HeatSource.m_TempIncrease -= Settings.options.waterTempRemoveDeg;
+					MelonLogger.Log(gi_wt.m_WaterSupply.m_VolumeInLiters + " " + _fire.m_HeatSource.m_MaxTempIncrease + " " + _fire.m_HeatSource.m_TempIncrease);
+				} else if (gi_wt.m_WaterSupply.m_VolumeInLiters <  0.25f)
+				{
+					HUDMessage.AddMessage("Need water in inventory.", false);
+				} else
+                {
+					HUDMessage.AddMessage("Temperature is too low.", false);
+				}
+
+			}
+			else if (fuel.name.ToLower().Contains("wood") || fuel.name.ToLower().Contains("coal"))
+			{
+
+				if (_fire.m_EmberDurationSecondsTOD < (Settings.options.embersTime * 3600))
+				{
+					float fuelmove = fuel.m_FuelSourceItem.m_BurnDurationHours * Settings.options.embersFuelRatio;
+					_fire.m_MaxOnTODSeconds -= fuelmove * 3600;
+					_fire.m_EmberDurationSecondsTOD += (fuelmove * 3600) * Settings.options.embersFuelEx;
+					// _fire.m_BurningTimeTODHours -= fuelmove;
+					MelonLogger.Log(fuel.name + " " + _fire.m_EmberDurationSecondsTOD + " " + fuel.m_FuelSourceItem.m_BurnDurationHours * 3600 + " " + (fuelmove * 3600) * Settings.options.embersFuelEx);
+				}
+				else
+				{
+					MelonLogger.Log(fuel.name + " " + _fire.m_EmberDurationSecondsTOD + " ");
+				}
+			}
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using ModSettings;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace FireAddons
 {
@@ -102,6 +103,42 @@ namespace FireAddons
 		[Description("Suggested value 0.2. Can be crafted from prybar, coal and whetstone.")]
 		[Slider(0f, 20f)]
 		public float flintDegredation = 0.2f;
+
+		[Section("Embers")]
+		[Name("Reworked embers")]
+		[Description("Enable reworked embers system - see Readme")]
+		public bool embersSystem = true;
+
+		[Name("Embers max time")]
+		[Description("Maximum time embers will last, in hours")]
+		[Slider(0f, 12f)]
+		public float embersTime = 8f;
+
+		[Name("Burnout temperature")]
+		[Description("Temperature above which fuel will be burning out from ember store. See next setting")]
+		[Slider(20, 50)]
+		public int embersBunoutTemp = 30;
+
+		[Name("Burnout ratio")]
+		[Description("Ratio of ember (max) time is removed (burnt) in one hour, at 80C. Burnt embers will extend burning time of fire.")]
+		[Slider(0.1f, 1f, NumberFormat = "{0:F2}")]
+		public float embersBunoutRatio = 0.5f;
+
+		[Name("Fuel to embers ratio")]
+		[Description("Ratio of fuel is transfered to embers on fuel add")]
+		[Slider(0.05f, 0.5f, NumberFormat = "{0:F2}")]
+		public float embersFuelRatio = 0.2f;
+
+		[Name("Fuel to embers exchange")]
+		[Description("Ratio of fuel is transfered to embers on fuel add")]
+		[Slider(1f, 5f)]
+		public float embersFuelEx = 2f;
+
+		[Name("Water fire colldown")]
+		[Description("Amount of deg, fire will cooldown per 250ml of water. NOTE: in 'Add Fuel' it will show as can/pot as water directly can't be used.")]
+		[Slider(1, 30)]
+		public int waterTempRemoveDeg = 15;
+
 
 
 

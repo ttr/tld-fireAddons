@@ -32,19 +32,21 @@ Also, if game had shovel as lootable, that could be more realistic flint.
 
 Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
 
+### Embers
+New embers mechanic change it to make it more managable.
+Idea is that wood (hard, soft and reclamed) and coal, can create embers if fire temperature is not too high. High temperature will burn fuel leaving nothing to become embers.
+NOrmally in game, temperature can only increase, so I've added ability to use potted (boiled) watter to reduce heat. You will need to have can/pot in inventory and they will show in 'add fuel' panel. They will not be consumed, but 250ml of water will.
+
+Details:
+Each fuel have burn time, that time on adding fuel is divided based on "Fuel to embers ratio" setting. That result is substracted from burn time and moved to embers time, with multiplication of "Fuel to embers exchange". This is done up to "Embers max time" - if that time is reached, all fuel time goes to burn time (as in vanilla game).
+When temperature of fire (heat increase) is above "Burnout temperature", ember time is being reduced and added back to burn time (convering back using "Fuel to embers exchange"). Rate of this transfer depends on temperature - higher temperature, quicker transfer.
+"Burnout ratio" sets how much of "Embers max time" would be burned in 1 hour if fire temperature is 80C or above. This calculated ratio feeds into previous.
+"Water fire cooldown" means how many deg (C) will be reduced per each 250ml water added to fire.
+
 ## Notes / Issues.
 Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)
 
-Embers idea:
- * coal, hardwood and perhaps softwood will contribiute to ember state
- * their values for time burned will be halved but will add (more than reduced value, maybe even double) to ember state 
- * this will not apply when temp is 80+C
- * this possibly should not apply fully when temp is high (50+C)
- * ember state needs to be caped at 12h tops, 8-10h optimum, open fires (cmaprife, barel) will have this at 1/3-1/2 of this value
- * if temp is high, reduce time from ember state to zero, and add time to burn fuel (reverse this)
- Pitfalls:
- * remining eber state on re-lit, should be re-added as fuel (partially) - we will ingnore this and accept it's lost
- * only last X of added fuel should be aded on calculation - this will require tracking of fuel individually, too much effort for win and keeping cap and need of low-mid temp will balance it.
- Implemenation proposal:
- Selected fuels, when added their burn time will be reduced by ratio of X, and that reduced value will be added to ember time by X*Y (Y is conversion ratio) up to max of Zh (and W*Zh for campfire).
- If burning temperature is above A, embertime is reduced by ratio B (b is calculated based on temp in range of Z<->80C, at 80C, full burn out (in 1h?)), that reduction is converted as (1/Y) and added to burning time.
+Embers idea - todo:
+ * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity)
+ * fire starting skill - low skill => chance to extinguish fire, high skill, addon of max time to ember state ?
+ * restaring fire - check if embers time is reduced correctly based on time "in ember state"

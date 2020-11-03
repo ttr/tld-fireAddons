@@ -134,7 +134,7 @@ namespace FireAddons
 		[Slider(1f, 5f)]
 		public float embersFuelEx = 2f;
 
-		[Name("Water fire colldown")]
+		[Name("Water fire cooldown")]
 		[Description("Amount of deg, fire will cooldown per 250ml of water. NOTE: in 'Add Fuel' it will show as can/pot as water directly can't be used.")]
 		[Slider(1, 30)]
 		public int waterTempRemoveDeg = 15;

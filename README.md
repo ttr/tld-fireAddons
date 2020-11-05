@@ -50,6 +50,7 @@ Embers - using can/pot - after 1st use, GUI will show NONE instead of object nam
 With out consuming it (as in, changing it fuel state so it will not be consumed) that chnage state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with.
 
 Embers - todo:
+ * show embers time in hint (somwhere/somehow)
  * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity) - there will be no check if it's indoors (probably)
  * fire starting skill - low skill => chance to extinguish fire, high skill, addon of max time to ember state ?
  * restaring fire - check if embers time is reduced correctly based on time "in ember state"

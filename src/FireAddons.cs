@@ -246,7 +246,7 @@ namespace FireAddons
 				if (logTimer > 60)
 				{
 					logTimer = 0;
-					MelonLogger.Log(__instance.name + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer);
+					//MelonLogger.Log(__instance.name + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer);
 
 				}
 				logTimer += deltaTime;
@@ -258,7 +258,6 @@ namespace FireAddons
 			Fire _fire = __instance.m_Fire;
 			GearItem fuel = __instance.GetSelectedFuelSource();
 			// cool off fire with water
-
 			if (fuel.name.ToLower().Contains("recycledcan") || fuel.name.ToLower().Contains("cookingpot"))
 			{
 

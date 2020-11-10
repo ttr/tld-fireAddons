@@ -36,10 +36,6 @@ namespace FireAddons
 		[Description("use tinder as fuel when firestarting level 3 is reach. Suggested yes!")]
 		public bool tinderAsFuel = true;
 
-		[Name("FORCE Tinder as Fuel")]
-		[Description("In case You're lev3 and new items are still tinder")]
-		public bool tinderAsFuelForced = false;
-
 		[Name("Tinder fuel time")]
 		[Description("In minutes, suggested 5")]
 		[Slider(1, 60)]

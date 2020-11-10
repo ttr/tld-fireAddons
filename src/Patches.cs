@@ -1,7 +1,5 @@
 ﻿using Harmony;
-using MelonLoader;
-using UnityEngine;
-//using System.Collections.Generic;
+using System;
 
 namespace FireAddons
 {
@@ -101,10 +99,32 @@ namespace FireAddons
                                         FireAddons.ModifyTinder(gearItem);
 
                                     }
+                                    if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
+                                    {
+                                        FireAddons.ModifyWater(gearItem, false);
+                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+            // load and save custom data
+            [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
+            internal class SaveGameSystemPatch_RestoreGlobalData
+            {
+                internal static void Postfix(string name)
+                {
+                    FireAddons.LoadData(name);
+                }
+            }
+
+            [HarmonyPatch(typeof(SaveGameSystem), "SaveGlobalData", new Type[] { typeof(SaveSlotType), typeof(string) })]
+            internal class SaveGameSystemPatch_SaveGlobalData
+            {
+                public static void Postfix(SaveSlotType gameMode, string name)
+                {
+                    FireAddons.SaveData(gameMode, name);
                 }
             }
 
@@ -155,10 +175,7 @@ namespace FireAddons
                                 }
                             }
                         }
-                        if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
-                        {
-                            FireAddons.ModifyWater(gearItem, false);
-                        }
+
                     }
                 }
 

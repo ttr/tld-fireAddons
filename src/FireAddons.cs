@@ -1,51 +1,39 @@
 ﻿using MelonLoader;
-using Steamworks;
 using UnhollowerBaseLib;
 using UnityEngine;
-
+using MelonLoader.TinyJSON;
+using System.Collections;
 
 namespace FireAddons
 {
 	internal class FireAddons : MelonMod
 	{
 		internal static float logTimer = 0;
+		private const string SAVE_NAME = "fireAddons";
+		// FAD = {guid__type => value}
+		private static Hashtable FAD = new Hashtable();
 		public override void OnApplicationStart()
 		{
 			Debug.Log($"[{InfoAttribute.Name}] Version {InfoAttribute.Version} loaded!");
 			Settings.OnLoad();
 		}
 
-		internal static void MyApplyChanges(GearItem gi)
+
+		internal static void LoadData(string name)
 		{
-
-			// Lamp as firestarter
-			if (Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp"))
+			string data = SaveGameSlots.LoadDataFromSlot(name, SAVE_NAME);
+			if (!string.IsNullOrEmpty(data))
 			{
-				if (!gi.m_FireStarterItem)
-				{
-					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
-				}
-				gi.m_FireStarterItem.m_ConsumeOnUse = false;
-				gi.m_FireStarterItem.m_FireStartDurationModifier = 60;
-				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lanternDegredation;
-				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
-				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
-				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
-				gi.m_FireStarterItem.m_OnUseSoundEvent = "Play_SNDACTIONFIREFLINTLOOP";
-
+				MelonLogger.Log("FAD loaded " + data);
+				JSON.Load(data).Populate(FAD);
 			}
+		}
 
-			// Flint
-			if (gi.name.Contains("GEAR_FlintAndSteel"))
-			{
-				if (!gi.m_FireStarterItem)
-				{
-					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
-				}
-				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
-				gi.m_StartCondition = GearStartCondition.Perfect;
-				gi.m_WeightKG = 1.5f; // combined weight of components it's made.
-			}
+		internal static void SaveData(SaveSlotType gameMode, string name)
+		{
+			string data = JSON.Dump(FAD, EncodeOptions.NoTypeHints);
+			MelonLogger.Log("FAD saved " + data );
+			SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
 		}
 
 		private static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
@@ -123,15 +111,55 @@ namespace FireAddons
 				if (!gi.m_FuelSourceItem)
 				{
 					gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
+					gi.m_FuelSourceItem.m_HeatIncrease = 0;
+					gi.m_FuelSourceItem.m_BurnDurationHours = 0;
+					gi.m_FuelSourceItem.m_IsTinder = false;
+					gi.m_FuelSourceItem.m_FireStartDurationModifier = 0;
+					gi.m_FuelSourceItem.m_FireStartSkillModifier = -100;
 				}
-				gi.m_FuelSourceItem.m_HeatIncrease = 0;
-				gi.m_FuelSourceItem.m_BurnDurationHours = 0;
-				gi.m_FuelSourceItem.m_IsTinder = false;
-				gi.m_FuelSourceItem.m_FireStartDurationModifier = 0;
-				gi.m_FuelSourceItem.m_FireStartSkillModifier = 0;
 
+			} else
+            {
+				if (gi.m_FuelSourceItem)
+                {
+					gi.m_FuelSourceItem = null;
+				}
 			}
 		}
+
+		internal static void MyApplyChanges(GearItem gi)
+		{
+
+			// Lamp as firestarter
+			if (Settings.options.lanternUse && gi.name.Contains("GEAR_KeroseneLamp"))
+			{
+				if (!gi.m_FireStarterItem)
+				{
+					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
+				}
+				gi.m_FireStarterItem.m_ConsumeOnUse = false;
+				gi.m_FireStarterItem.m_FireStartDurationModifier = 60;
+				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lanternDegredation;
+				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
+				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
+				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
+				gi.m_FireStarterItem.m_OnUseSoundEvent = "Play_SNDACTIONFIREFLINTLOOP";
+
+			}
+
+			// Flint
+			if (gi.name.Contains("GEAR_FlintAndSteel"))
+			{
+				if (!gi.m_FireStarterItem)
+				{
+					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
+				}
+				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
+				gi.m_StartCondition = GearStartCondition.Perfect;
+				gi.m_WeightKG = 1.5f; // combined weight of components it's made.
+			}
+		}
+
 		internal static void Blueprints()
 		{
 			// Buy 'zeobviouslyfakeacc' a beer as i've used his tincan improvements code
@@ -198,64 +226,135 @@ namespace FireAddons
 
 		internal static void CalculateEmbers(Fire __instance)
 		{
-			if (__instance.m_HeatSource.IsTurnedOn() && __instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
+			float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
+			float currTemp = __instance.GetCurrentTempIncrease();
+			float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
+			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
+			// game load - fix fire state (embers)
+			if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState() != (FireState)FAD[guid + "__fireState"])
+            {
+				MelonLogger.Log("set from -> " + (float)FAD[guid + "__fireState"]);
+				__instance.FireStateSet((FireState)FAD[guid + "__fireState"]);
+			}
+
+			if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
 			{
-				float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
-				float currTemp = __instance.GetCurrentTempIncrease();
-				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
-
-				// aways use embers state
-				if (!__instance.m_UseEmbers)
-				{
-					__instance.m_UseEmbers = true;
-					__instance.m_DurationSecondsToReduceToEmbers = 0;
-				}
-
-				// reset embers timer if burning
-				if (__instance.m_EmberTimer != 0 && remSec > 0)
-				{
-					__instance.m_EmberTimer = 0;
-				}
-
-				if (currTemp > Settings.options.embersBunoutTemp && __instance.m_EmberDurationSecondsTOD > 0f)
-				{
-					float burnRatio = Mathf.InverseLerp(Settings.options.embersBunoutTemp, 80f, currTemp);
-					float maxBurnRatio = Settings.options.embersBunoutRatio * Settings.options.embersTime;
-					float variedBurnSec = (maxBurnRatio * burnRatio);
-
-					/* Small word of explanation
-					 * this looks like it's underpowered as next one is ratio in hours and nowhere is converted to seconds
-					 * however deltatime is in seconds, so whole ember store would be burned in second, not hour and doing 2 converstion (delta time and varitBurnSec) just to look clear is insane
-					 */
-
-					// remove embers per tick
-					__instance.m_EmberDurationSecondsTOD -= variedBurnSec * deltaTime;
-					if (__instance.m_EmberDurationSecondsTOD < 0f)
+				// game load - fix ember time
+				if (__instance.m_EmberDurationSecondsTOD == 500 && __instance.m_DurationSecondsToReduceToEmbers == 500)
+                {
+					if (FAD.ContainsKey(guid + "__emberTime"))
 					{
-						__instance.m_EmberDurationSecondsTOD = 0;
+						MelonLogger.Log("500 -> " + (float)FAD[guid + "__emberTime"]);
+						__instance.m_EmberDurationSecondsTOD = (float)FAD[guid + "__emberTime"];
+						__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
 					}
-					else
-					{
-						__instance.m_MaxOnTODSeconds += variedBurnSec * deltaTime / Settings.options.embersFuelEx;
-					}
+
+				}
+				// save/set fire state
+				if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState() != (FireState)FAD[guid + "__fireState"])
+				{
+					MelonLogger.Log("set to -> " + (float)FAD[guid + "__fireState"]);
+					FAD[guid + "__fireState"] = __instance.GetFireState().ToString();
+				} else if (!FAD.ContainsKey(guid + "__fireState"))
+                {
+					MelonLogger.Log("add -> " + (float)FAD[guid + "__fireState"]);
+					FAD.Add(guid + "__fireState", __instance.GetFireState().ToString());
 				}
 
-				//	GameObject obj = __instance.transform.GetParent()?.gameObject;
-				//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
+
+				if (__instance.m_HeatSource.IsTurnedOn())
+				{
+
+					// aways use embers state
+					if (!__instance.m_UseEmbers)
+					{
+						__instance.m_UseEmbers = true;
+					}
+
+					// reset embers timer if burning
+					if (__instance.m_EmberTimer != 0 && remSec > 0)
+					{
+						__instance.m_EmberTimer = 0;
+					}
+
+					if (currTemp > Settings.options.embersBunoutTemp && __instance.m_EmberDurationSecondsTOD > 0f)
+					{
+						float burnRatio = Mathf.InverseLerp(Settings.options.embersBunoutTemp, 80f, currTemp);
+						float maxBurnRatio = Settings.options.embersBunoutRatio * Settings.options.embersTime;
+						float variedBurnSec = (maxBurnRatio * burnRatio);
+
+						/* Small word of explanation
+						 * this looks like it's underpowered as next one is ratio in hours and nowhere is converted to seconds
+						 * however deltatime is in seconds, so whole ember store would be burned in second, not hour and doing 2 converstion (delta time and varitBurnSec) just to look clear is insane
+						 */
+
+						// remove embers per tick
+						__instance.m_EmberDurationSecondsTOD -= variedBurnSec * deltaTime;
+						__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
+
+						if (FAD.ContainsKey(guid + "__emberTime"))
+						{
+							FAD[guid + "__emberTime"] = __instance.m_EmberDurationSecondsTOD;
+							MelonLogger.Log("set -> " + (float)FAD[guid + "__emberTime"]);
+						} else
+                        {
+							FAD.Add(guid + "__emberTime", __instance.m_EmberDurationSecondsTOD);
+							MelonLogger.Log("add -> " + (float)FAD[guid + "__emberTime"]);
+						}
+
+						if (__instance.m_EmberDurationSecondsTOD < 0f)
+						{
+							__instance.m_EmberDurationSecondsTOD = 0;
+						}
+						else
+						{
+							__instance.m_MaxOnTODSeconds += variedBurnSec * deltaTime / Settings.options.embersFuelEx;
+						}
+					}
+
+					//	GameObject obj = __instance.transform.GetParent()?.gameObject;
+					//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
+
+
+				}
+				else if (remSec > 0f && !__instance.m_HeatSource.IsTurnedOn())
+				{
+					__instance.m_HeatSource.TurnOn();
+					__instance.m_HeatSource.m_MaxTempIncrease = __instance.m_FuelHeatIncrease;
+					__instance.m_HeatSource.m_TempIncrease = __instance.m_FuelHeatIncrease;
+				}
+				if (logTimer > 60)
+				{
+					logTimer = 0;
+					MelonLogger.Log("on " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " usabeFuel:" + __instance.m_UsableFuelRemaining + " rem:" + remSec);
+
+				}
+				logTimer += deltaTime;
+			}
+			else
+			{
+				if (FAD.ContainsKey(guid + "__emberTime"))
+				{
+					MelonLogger.Log("rm -> " + (float)FAD[guid + "__emberTime"]);
+					FAD.Remove(guid + "__emberTime");
+					FAD.Remove(guid + "__fireState");
+				}
 
 				if (logTimer > 60)
 				{
 					logTimer = 0;
-					//MelonLogger.Log(__instance.name + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer);
+					MelonLogger.Log("off " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " usabeFuel:" + __instance.m_UsableFuelRemaining);
 
 				}
 				logTimer += deltaTime;
+
 			}
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)
 		{
 
 			Fire _fire = __instance.m_Fire;
+			string guid = Utils.GetGuidFromGameObject(_fire.gameObject);
 			GearItem fuel = __instance.GetSelectedFuelSource();
 			// cool off fire with water
 			if (fuel.name.ToLower().Contains("recycledcan") || fuel.name.ToLower().Contains("cookingpot"))
@@ -293,7 +392,16 @@ namespace FireAddons
 				GearItem clone = Utils.InstantiateGearFromPrefabName(fuel.name);
 				clone.m_CurrentHP = fuel.m_CurrentHP;
 				GameManager.GetInventoryComponent().AddGear(clone.gameObject);
+				GameManager.GetInventoryComponent().DestroyGear(fuel.gameObject);
 			}
+			// added fuel while embers
+			else if (_fire.m_EmberTimer > 0f )
+            {
+				_fire.m_MaxOnTODSeconds += _fire.m_EmberTimer;
+				_fire.m_EmberTimer = 0;
+
+			}
+			// try add fuel to embers unless it wasn't comming out from ember state.
 			else if (fuel.name.ToLower().Contains("wood") || fuel.name.ToLower().Contains("coal"))
 			{
 				if (_fire.GetRemainingLifeTimeSeconds() < 39600 && (_fire.m_EmberDurationSecondsTOD < (Settings.options.embersTime * 3600)))
@@ -301,7 +409,18 @@ namespace FireAddons
 					float fuelmove = fuel.m_FuelSourceItem.m_BurnDurationHours * Settings.options.embersFuelRatio;
 					_fire.m_MaxOnTODSeconds -= fuelmove * 3600;
 					_fire.m_EmberDurationSecondsTOD += (fuelmove * 3600) * Settings.options.embersFuelEx;
+					_fire.m_DurationSecondsToReduceToEmbers = _fire.m_EmberDurationSecondsTOD;
 					_fire.m_BurningTimeTODHours -= fuelmove;
+					if (FAD.ContainsKey(guid + "__emberTime"))
+					{
+						FAD[guid + "__emberTime"] = _fire.m_EmberDurationSecondsTOD;
+						MelonLogger.Log("set -> " + (float)FAD[guid + "__emberTime"]);
+					}
+					else
+					{
+						FAD.Add(guid + "__emberTime", _fire.m_EmberDurationSecondsTOD);
+						MelonLogger.Log("add -> " + (float)FAD[guid + "__emberTime"]);
+					}
 				}
 			}
 		}

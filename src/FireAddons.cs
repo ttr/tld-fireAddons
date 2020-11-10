@@ -2,7 +2,8 @@
 using UnhollowerBaseLib;
 using UnityEngine;
 using MelonLoader.TinyJSON;
-using System.Collections;
+using System.Collections.Generic;
+
 
 namespace FireAddons
 {
@@ -10,8 +11,9 @@ namespace FireAddons
 	{
 		internal static float logTimer = 0;
 		private const string SAVE_NAME = "fireAddons";
+		private static List<string> fireFixed = new List<string>();
 		// FAD = {guid__type => value}
-		private static Hashtable FAD = new Hashtable();
+		private static Dictionary<string, string> FAD = new Dictionary<string, string>();
 		public override void OnApplicationStart()
 		{
 			Debug.Log($"[{InfoAttribute.Name}] Version {InfoAttribute.Version} loaded!");
@@ -25,7 +27,14 @@ namespace FireAddons
 			if (!string.IsNullOrEmpty(data))
 			{
 				MelonLogger.Log("FAD loaded " + data);
-				JSON.Load(data).Populate(FAD);
+				var foo = JSON.Load(data);
+				FAD.Clear();
+				fireFixed.Clear();
+				foreach (var entry in foo as ProxyObject)
+				{
+					FAD.Add(entry.Key, entry.Value);
+				}
+
 			}
 		}
 
@@ -230,37 +239,41 @@ namespace FireAddons
 			float currTemp = __instance.GetCurrentTempIncrease();
 			float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
 			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
-			// game load - fix fire state (embers)
-			if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState() != (FireState)FAD[guid + "__fireState"])
-            {
-				MelonLogger.Log("set from -> " + (float)FAD[guid + "__fireState"]);
-				__instance.FireStateSet((FireState)FAD[guid + "__fireState"]);
+
+			// game load - fix ember time
+			if (__instance.m_EmberDurationSecondsTOD == 500f && __instance.m_DurationSecondsToReduceToEmbers == 500f && !fireFixed.Contains(guid))
+			{
+				if (FAD.ContainsKey(guid + "__emberTime"))
+				{
+					MelonLogger.Log("500 -> " + float.Parse(FAD[guid + "__emberTime"]));
+					__instance.m_EmberDurationSecondsTOD = float.Parse(FAD[guid + "__emberTime"]);
+					__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
+					fireFixed.Add(guid);
+				}
 			}
+			// game load - fix fire state (to fullBurn if needed)
+			if (FAD.ContainsKey(guid + "__fireState") && FAD[guid + "__fireState"] == "FullBurn" && __instance.GetFireState().ToString() != FAD[guid + "__fireState"])
+			{
+				MelonLogger.Log("set from -> " + guid);
+				FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid + "__fireState"]);
+				__instance.FireStateSet(foo);
+
+			}
+
 
 			if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
 			{
-				// game load - fix ember time
-				if (__instance.m_EmberDurationSecondsTOD == 500 && __instance.m_DurationSecondsToReduceToEmbers == 500)
-                {
-					if (FAD.ContainsKey(guid + "__emberTime"))
-					{
-						MelonLogger.Log("500 -> " + (float)FAD[guid + "__emberTime"]);
-						__instance.m_EmberDurationSecondsTOD = (float)FAD[guid + "__emberTime"];
-						__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
-					}
 
-				}
 				// save/set fire state
-				if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState() != (FireState)FAD[guid + "__fireState"])
+
+				if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState().ToString() != FAD[guid + "__fireState"])
 				{
-					MelonLogger.Log("set to -> " + (float)FAD[guid + "__fireState"]);
 					FAD[guid + "__fireState"] = __instance.GetFireState().ToString();
-				} else if (!FAD.ContainsKey(guid + "__fireState"))
-                {
-					MelonLogger.Log("add -> " + (float)FAD[guid + "__fireState"]);
+				}
+				else if (!FAD.ContainsKey(guid + "__fireState"))
+				{
 					FAD.Add(guid + "__fireState", __instance.GetFireState().ToString());
 				}
-
 
 				if (__instance.m_HeatSource.IsTurnedOn())
 				{
@@ -294,12 +307,10 @@ namespace FireAddons
 
 						if (FAD.ContainsKey(guid + "__emberTime"))
 						{
-							FAD[guid + "__emberTime"] = __instance.m_EmberDurationSecondsTOD;
-							MelonLogger.Log("set -> " + (float)FAD[guid + "__emberTime"]);
+							FAD[guid + "__emberTime"] = __instance.m_EmberDurationSecondsTOD.ToString();
 						} else
                         {
-							FAD.Add(guid + "__emberTime", __instance.m_EmberDurationSecondsTOD);
-							MelonLogger.Log("add -> " + (float)FAD[guid + "__emberTime"]);
+							FAD.Add(guid + "__emberTime", __instance.m_EmberDurationSecondsTOD.ToString());
 						}
 
 						if (__instance.m_EmberDurationSecondsTOD < 0f)
@@ -326,16 +337,15 @@ namespace FireAddons
 				if (logTimer > 60)
 				{
 					logTimer = 0;
-					MelonLogger.Log("on " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " usabeFuel:" + __instance.m_UsableFuelRemaining + " rem:" + remSec);
-
+					MelonLogger.Log("on " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " rem:" + remSec);
 				}
 				logTimer += deltaTime;
 			}
 			else
 			{
-				if (FAD.ContainsKey(guid + "__emberTime"))
+				if (FAD.ContainsKey(guid + "__emberTime") && float.Parse(FAD[guid + "__emberTime"]) <= 0f)
 				{
-					MelonLogger.Log("rm -> " + (float)FAD[guid + "__emberTime"]);
+					MelonLogger.Log("rm -> " + FAD[guid + "__emberTime"]);
 					FAD.Remove(guid + "__emberTime");
 					FAD.Remove(guid + "__fireState");
 				}
@@ -343,8 +353,7 @@ namespace FireAddons
 				if (logTimer > 60)
 				{
 					logTimer = 0;
-					MelonLogger.Log("off " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " usabeFuel:" + __instance.m_UsableFuelRemaining);
-
+					MelonLogger.Log("off " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
 				}
 				logTimer += deltaTime;
 
@@ -413,13 +422,13 @@ namespace FireAddons
 					_fire.m_BurningTimeTODHours -= fuelmove;
 					if (FAD.ContainsKey(guid + "__emberTime"))
 					{
-						FAD[guid + "__emberTime"] = _fire.m_EmberDurationSecondsTOD;
-						MelonLogger.Log("set -> " + (float)FAD[guid + "__emberTime"]);
+						FAD[guid + "__emberTime"] = _fire.m_EmberDurationSecondsTOD.ToString();
+						MelonLogger.Log("set -> " + FAD[guid + "__emberTime"]);
 					}
 					else
 					{
-						FAD.Add(guid + "__emberTime", _fire.m_EmberDurationSecondsTOD);
-						MelonLogger.Log("add -> " + (float)FAD[guid + "__emberTime"]);
+						FAD.Add(guid + "__emberTime", _fire.m_EmberDurationSecondsTOD.ToString());
+						MelonLogger.Log("add -> " + FAD[guid + "__emberTime"]);
 					}
 				}
 			}

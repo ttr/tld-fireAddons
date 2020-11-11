@@ -12,8 +12,8 @@ namespace FireAddons
 		internal static float logTimer = 0;
 		private const string SAVE_NAME = "fireAddons";
 		private static List<string> fireFixed = new List<string>();
-		// FAD = {guid__type => value}
-		private static Dictionary<string, string> FAD = new Dictionary<string, string>();
+		private static int FADSchema = 2;
+		private static Dictionary<string, FireAddonsData> FAD = new Dictionary<string, FireAddonsData>();
 		public override void OnApplicationStart()
 		{
 			Debug.Log($"[{InfoAttribute.Name}] Version {InfoAttribute.Version} loaded!");
@@ -23,18 +23,20 @@ namespace FireAddons
 
 		internal static void LoadData(string name)
 		{
+			FAD.Clear();
+			fireFixed.Clear();
 			string data = SaveGameSlots.LoadDataFromSlot(name, SAVE_NAME);
 			if (!string.IsNullOrEmpty(data))
 			{
-				MelonLogger.Log("FAD loaded " + data);
+				MelonLogger.Log("JSON loaded " + data);
 				var foo = JSON.Load(data);
-				FAD.Clear();
-				fireFixed.Clear();
 				foreach (var entry in foo as ProxyObject)
-				{
-					FAD.Add(entry.Key, entry.Value);
+                {
+					FireAddonsData lFAD = new FireAddonsData();
+					entry.Value.Populate(lFAD);
+					FAD.Add(entry.Key, lFAD);
 				}
-
+				MelonLogger.Log("FAD loaded " + JSON.Dump(FAD, EncodeOptions.NoTypeHints));
 			}
 		}
 
@@ -233,6 +235,53 @@ namespace FireAddons
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
 
+		private static void writeFireData(Fire __instance, string guid)
+        {
+			// create new instance if needed
+			if (!FAD.ContainsKey(guid))
+			{
+				FireAddonsData lFAD = new FireAddonsData();
+				FAD.Add(guid, lFAD);
+			}
+			FAD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
+			FAD[guid].ver = FADSchema;
+			FAD[guid].fireState = __instance.GetFireState().ToString();
+			FAD[guid].embersSeconds = __instance.m_EmberDurationSecondsTOD;
+			FAD[guid].emberTimer = __instance.m_EmberTimer;
+			FAD[guid].burnSeconds = __instance.m_ElapsedOnTODSeconds;
+			FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
+			FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
+		}
+		private static void loadFireData(Fire __instance, string guid)
+        {
+			if (FAD.ContainsKey(guid))
+			{
+				float timeDiff = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled()) - FAD[guid].timestamp;
+				__instance.m_EmberTimer = FAD[guid].emberTimer;
+				__instance.m_ElapsedOnTODSeconds = FAD[guid].burnSeconds;
+				__instance.m_MaxOnTODSeconds = FAD[guid].burnMaxSeconds;
+				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
+
+				if (timeDiff > remSec)
+                {
+					timeDiff -= remSec;
+					__instance.m_ElapsedOnTODSeconds = __instance.m_MaxOnTODSeconds;
+					__instance.m_EmberTimer += timeDiff;
+
+				} else
+                {
+					__instance.m_ElapsedOnTODSeconds += timeDiff;
+
+				}
+
+				__instance.m_EmberDurationSecondsTOD = FAD[guid].embersSeconds;
+				__instance.m_DurationSecondsToReduceToEmbers = FAD[guid].embersSeconds;
+				__instance.m_FuelHeatIncrease = FAD[guid].heatTemp;
+				__instance.m_HeatSource.m_MaxTempIncrease = FAD[guid].heatTemp;
+				__instance.m_HeatSource.m_TempIncrease = FAD[guid].heatTemp;
+			}
+
+		}
 		internal static void CalculateEmbers(Fire __instance)
 		{
 			float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
@@ -240,56 +289,53 @@ namespace FireAddons
 			float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
 			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
 
-			// game load - fix ember time
-			if (__instance.m_EmberDurationSecondsTOD == 500f && __instance.m_DurationSecondsToReduceToEmbers == 500f && !fireFixed.Contains(guid))
+			// apply stored configs to detected fires - only once
+			if (!fireFixed.Contains(guid))
 			{
-				if (FAD.ContainsKey(guid + "__emberTime"))
+				if (FAD.ContainsKey(guid))
 				{
-					MelonLogger.Log("500 -> " + float.Parse(FAD[guid + "__emberTime"]));
-					__instance.m_EmberDurationSecondsTOD = float.Parse(FAD[guid + "__emberTime"]);
-					__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
+					if (FAD[guid].ver == FADSchema)
+					{
+						//timestamp;
+						FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid].fireState);
+						__instance.FireStateSet(foo);
+						loadFireData(__instance, guid);
+						MelonLogger.Log("load " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " rem:" + remSec);
+
+					}
+					else
+                    {
+						FAD.Remove(guid);
+                    }
 					fireFixed.Add(guid);
 				}
 			}
-			// game load - fix fire state (to fullBurn if needed)
-			if (FAD.ContainsKey(guid + "__fireState") && FAD[guid + "__fireState"] == "FullBurn" && __instance.GetFireState().ToString() != FAD[guid + "__fireState"])
-			{
-				MelonLogger.Log("set from -> " + guid);
-				FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid + "__fireState"]);
-				__instance.FireStateSet(foo);
-
-			}
-
 
 			if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
 			{
 
-				// save/set fire state
-
-				if (FAD.ContainsKey(guid + "__fireState") && __instance.GetFireState().ToString() != FAD[guid + "__fireState"])
-				{
-					FAD[guid + "__fireState"] = __instance.GetFireState().ToString();
-				}
-				else if (!FAD.ContainsKey(guid + "__fireState"))
-				{
-					FAD.Add(guid + "__fireState", __instance.GetFireState().ToString());
-				}
 
 				if (__instance.m_HeatSource.IsTurnedOn())
 				{
-
 					// aways use embers state
 					if (!__instance.m_UseEmbers)
 					{
 						__instance.m_UseEmbers = true;
 					}
 
-					// reset embers timer if burning
+					// reset embers timer if burning, reduce embers of burned value
 					if (__instance.m_EmberTimer != 0 && remSec > 0)
 					{
+						__instance.m_EmberDurationSecondsTOD -= __instance.m_EmberTimer;
 						__instance.m_EmberTimer = 0;
 					}
+					// ember timer should be positive when fire is burning
+					// negative can be when fire and embers died out off-scene.
+					if (__instance.m_EmberDurationSecondsTOD < 0 && remSec > 0)
+                    {
+						__instance.m_EmberDurationSecondsTOD = 0;
 
+					}
 					if (currTemp > Settings.options.embersBunoutTemp && __instance.m_EmberDurationSecondsTOD > 0f)
 					{
 						float burnRatio = Mathf.InverseLerp(Settings.options.embersBunoutTemp, 80f, currTemp);
@@ -303,16 +349,6 @@ namespace FireAddons
 
 						// remove embers per tick
 						__instance.m_EmberDurationSecondsTOD -= variedBurnSec * deltaTime;
-						__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
-
-						if (FAD.ContainsKey(guid + "__emberTime"))
-						{
-							FAD[guid + "__emberTime"] = __instance.m_EmberDurationSecondsTOD.ToString();
-						} else
-                        {
-							FAD.Add(guid + "__emberTime", __instance.m_EmberDurationSecondsTOD.ToString());
-						}
-
 						if (__instance.m_EmberDurationSecondsTOD < 0f)
 						{
 							__instance.m_EmberDurationSecondsTOD = 0;
@@ -326,38 +362,37 @@ namespace FireAddons
 					//	GameObject obj = __instance.transform.GetParent()?.gameObject;
 					//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
 
-
+					// sync those - unsynced seems to cause problems when adding fuel to embers.
+					__instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
+					writeFireData(__instance, guid);
 				}
+				/*
 				else if (remSec > 0f && !__instance.m_HeatSource.IsTurnedOn())
 				{
 					__instance.m_HeatSource.TurnOn();
 					__instance.m_HeatSource.m_MaxTempIncrease = __instance.m_FuelHeatIncrease;
 					__instance.m_HeatSource.m_TempIncrease = __instance.m_FuelHeatIncrease;
 				}
+				*/
 				if (logTimer > 60)
 				{
-					logTimer = 0;
+
 					MelonLogger.Log("on " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " rem:" + remSec);
 				}
-				logTimer += deltaTime;
 			}
 			else
 			{
-				if (FAD.ContainsKey(guid + "__emberTime") && float.Parse(FAD[guid + "__emberTime"]) <= 0f)
+				if (FAD.ContainsKey(guid))
 				{
-					MelonLogger.Log("rm -> " + FAD[guid + "__emberTime"]);
-					FAD.Remove(guid + "__emberTime");
-					FAD.Remove(guid + "__fireState");
+					FAD.Remove(guid);
+					MelonLogger.Log("rm " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
 				}
-
-				if (logTimer > 60)
-				{
-					logTimer = 0;
-					MelonLogger.Log("off " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
-				}
-				logTimer += deltaTime;
-
 			}
+			if (logTimer > 60)
+			{
+				logTimer = 0;
+			}
+			logTimer += deltaTime;
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)
 		{
@@ -420,18 +455,19 @@ namespace FireAddons
 					_fire.m_EmberDurationSecondsTOD += (fuelmove * 3600) * Settings.options.embersFuelEx;
 					_fire.m_DurationSecondsToReduceToEmbers = _fire.m_EmberDurationSecondsTOD;
 					_fire.m_BurningTimeTODHours -= fuelmove;
-					if (FAD.ContainsKey(guid + "__emberTime"))
-					{
-						FAD[guid + "__emberTime"] = _fire.m_EmberDurationSecondsTOD.ToString();
-						MelonLogger.Log("set -> " + FAD[guid + "__emberTime"]);
-					}
-					else
-					{
-						FAD.Add(guid + "__emberTime", _fire.m_EmberDurationSecondsTOD.ToString());
-						MelonLogger.Log("add -> " + FAD[guid + "__emberTime"]);
-					}
 				}
 			}
 		}
+	}
+	internal class FireAddonsData
+    {
+		public int ver;
+		public float timestamp;
+		public string fireState;
+		public float embersSeconds;
+		public float emberTimer;
+		public float burnSeconds;
+		public float burnMaxSeconds;
+		public float heatTemp;
 	}
 }

@@ -34,5 +34,5 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: MelonModInfo(typeof(FireAddons.FireAddons), "FireAddons", "1.6.1", "ttr")]
+[assembly: MelonModInfo(typeof(FireAddons.FireAddons), "FireAddons", "1.6.2", "ttr")]
 [assembly: MelonModGame("Hinterland", "TheLongDark")]

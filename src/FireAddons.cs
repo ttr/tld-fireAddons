@@ -9,7 +9,6 @@ namespace FireAddons
 {
 	internal class FireAddons : MelonMod
 	{
-		internal static float logTimer = 0;
 		private const string SAVE_NAME = "fireAddons";
 		private static List<string> fireFixed = new List<string>();
 		private static int FADSchema = 2;
@@ -36,14 +35,14 @@ namespace FireAddons
 					entry.Value.Populate(lFAD);
 					FAD.Add(entry.Key, lFAD);
 				}
-				MelonLogger.Log("FAD loaded " + JSON.Dump(FAD, EncodeOptions.NoTypeHints));
+				//MelonLogger.Log("FAD loaded " + JSON.Dump(FAD, EncodeOptions.NoTypeHints));
 			}
 		}
 
 		internal static void SaveData(SaveSlotType gameMode, string name)
 		{
 			string data = JSON.Dump(FAD, EncodeOptions.NoTypeHints);
-			MelonLogger.Log("FAD saved " + data );
+			//MelonLogger.Log("FAD saved " + data );
 			SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
 		}
 
@@ -300,8 +299,6 @@ namespace FireAddons
 						FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid].fireState);
 						__instance.FireStateSet(foo);
 						loadFireData(__instance, guid);
-						MelonLogger.Log("load " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " rem:" + remSec);
-
 					}
 					else
                     {
@@ -374,25 +371,30 @@ namespace FireAddons
 					__instance.m_HeatSource.m_TempIncrease = __instance.m_FuelHeatIncrease;
 				}
 				*/
-				if (logTimer > 60)
-				{
-
-					MelonLogger.Log("on " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " rem:" + remSec);
-				}
 			}
 			else
 			{
+
 				if (FAD.ContainsKey(guid))
 				{
-					FAD.Remove(guid);
+					/*
+					// easy way to update and recalculate - this is edge case after time skip
+					writeFireData(__instance, guid);
+					loadFireData(__instance, guid);
+					if ((__instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds) > 0f || (__instance.m_EmberDurationSecondsTOD - __instance.m_EmberTimer) > 0f)
+					{
+						__instance.FireStateSet(FireState.FullBurn);
+						__instance.m_HeatSource.TurnOn();
+						MelonLogger.Log("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
+					}
+					else
+					{
+					*/
 					MelonLogger.Log("rm " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
+					FAD.Remove(guid);
+					//}
 				}
 			}
-			if (logTimer > 60)
-			{
-				logTimer = 0;
-			}
-			logTimer += deltaTime;
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)
 		{

@@ -47,14 +47,14 @@ namespace FireAddons
 		public int tinderFueldeg = 5;
 
 		[Name("Tinder base fire start offset")]
-		[Description("Suggested value 10 - this is to compensate lack of proper fuel. Book is 30, softwood is 10. This will be at level 3 so your base is higher.")]
+		[Description("Suggested value 10 - this is to compensate lack of proper fuel. Book is 30, softwood is 10. This will be at level 3 so your base rate will also be higher.")]
 		[Slider(0, 30)]
 		public int tinderBonusOffset = 10;
 
 		[Name("Tinder Plug: fire start Modification")]
-		[Description("Suggested value 3")]
+		[Description("Suggested value 1")]
 		[Slider(-20, 10)]
-		public int tinderBonusPlug = 3;
+		public int tinderBonusPlug = 1;
 
 		[Name("Newsprint: fire start Modification")]
 		[Description("Suggested value 2")]

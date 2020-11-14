@@ -43,6 +43,9 @@ When temperature of fire (heat increase) is above "Burnout temperature", ember t
 "Burnout ratio" sets how much of "Embers max time" would be burned in 1 hour if fire temperature is 80C or above. This calculated ratio feeds into previous.
 "Water fire cooldown" means how many deg (C) will be reduced per each 250ml water added to fire.
 
+Embers timer is showed in hover card, next to burn time.
+Thanks to [Digitalzombie](https://github.com/DigitalzombieTLD) for help with hover card.
+
 ## Notes / Issues.
 Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)
 
@@ -50,7 +53,6 @@ Embers - using can/pot - after 1st use, GUI will show NONE instead of object nam
 With out consuming it (as in, changing it fuel state so it will not be consumed) that chnage state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with.
 
 Embers - todo:
- * show embers time in hint (somwhere/somehow)
  * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity) - there will be no check if it's indoors (probably)
  * fire starting skill - low skill => chance to extinguish fire, high skill, addon of max time to ember state ?
  * restaring fire - check if embers time is reduced correctly based on time "in ember state"

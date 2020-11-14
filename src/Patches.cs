@@ -194,9 +194,16 @@ namespace FireAddons
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
-                    string[] input = __result.Split('\n');
                     // those spaces are needed for 'canvas' as it's calculateb based on 1st line lenght
-                    __result = "      " + input[0] + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                    if (__instance.m_Fire.m_EmberTimer == 0)
+                    {
+                        string[] input = __result.Split('\n');
+                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                    }
+                    else
+                    {
+                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
+                    }
                 }
             }
         }
@@ -211,9 +218,16 @@ namespace FireAddons
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
-                    string[] input = __result.Split('\n');
+
                     // those spaces are needed for 'canvas' as it's calculateb based on 1st line lenght
-                    __result = "      " + input[0] + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                    if (__instance.m_Fire.m_EmberTimer == 0)
+                    {
+                        string[] input = __result.Split('\n');
+                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                    } else
+                    {
+                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
+                    }
                 }
             }
         }

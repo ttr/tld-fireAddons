@@ -331,7 +331,6 @@ namespace FireAddons
 					loadFireData(__instance, guid);
 					// always on load, enable embers -> this way we should have embers when fire burned out off-scene
 					__instance.m_UseEmbers = true;
-					Utils.SetActive(__instance.m_FX.lighting.gameObject, true);
 				}
 				else
 				{
@@ -387,36 +386,12 @@ namespace FireAddons
 					// sync those - unsynced seems to cause problems when adding fuel to embers.
 					// __instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
 
-
-					// set m_UseEmbers when ember time is less then half -> this settings will allow cooking/heat to be on
-					// beyond this time, fire is still smoldering - too low heat to cook, but still able to restart, yet we reduce heat to 1C
 					if (__instance.m_EmberTimer > 0)
 					{
-						float emberHalfLife = __instance.m_EmberDurationSecondsTOD / 2;
-
-						Utils.SetActive(__instance.m_FX.lighting.gameObject, false);
-						if (emberHalfLife > __instance.m_EmberTimer)
-						{
-							__instance.m_UseEmbers = true;
-							__instance.m_HeatSource.m_TurnedOn = true;
-							//	__instance.m_HeatSource.m_TimeToReachMaxTempMinutes = emberHalfLife;
-						}
-						else
-						{
-							__instance.m_UseEmbers = false;
-							__instance.m_HeatSource.m_MaxTempIncrease = 0;
-							//	__instance.m_HeatSource.m_TimeToReachMaxTempMinutes = 10;
-						}
+						__instance.m_UseEmbers = true;
+						__instance.m_HeatSource.m_MaxTempIncrease = 5;
 					}
 					writeFireData(__instance, guid);
-					/*
-					else if (remSec > 0f && !__instance.m_HeatSource.IsTurnedOn())
-					{
-						__instance.m_HeatSource.TurnOn();
-						__instance.m_HeatSource.m_MaxTempIncrease = __instance.m_FuelHeatIncrease;
-						__instance.m_HeatSource.m_TempIncrease = __instance.m_FuelHeatIncrease;
-					}
-					*/
 				}
 				else
 				{

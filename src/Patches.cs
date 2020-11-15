@@ -189,7 +189,7 @@ namespace FireAddons
         {
             private static void Postfix(Campfire __instance, ref string __result)
             {
-                if (__instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
@@ -213,7 +213,7 @@ namespace FireAddons
         {
             public static void Postfix(WoodStove __instance, ref string __result)
             {
-                if (__instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
@@ -228,6 +228,31 @@ namespace FireAddons
                     {
                         __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
                     }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(CookingPotItem), "AttachedFireIsBurning")]
+        internal static class CookingPotItem_AttachedFireIsBurning
+        {
+            public static void Postfix(CookingPotItem __instance, ref bool __result)
+            {
+                if (Settings.options.embersSystem && __result && __instance.m_FireBeingUsed.m_UseEmbers)
+                {
+                    __result = false;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Fire), "IsBurning")]
+        internal static class Fire_IsBurning
+        {
+            public static void Postfix(Fire __instance, ref bool __result)
+            {
+                MelonLogger.Log(__instance.name + " IsBurning " + __result);
+                if (Settings.options.embersSystem && __result && __instance.m_UseEmbers)
+                {
+                    __result = false;
                 }
             }
         }

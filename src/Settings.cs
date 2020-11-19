@@ -33,7 +33,7 @@ namespace FireAddons
 
 		[Section("Tinder")]
 		[Name("Tinder as Fuel")]
-		[Description("use tinder as fuel when firestarting level 3 is reach. Suggested yes!")]
+		[Description("Use tinder as fuel (not during starting fire). Suggested yes")]
 		public bool tinderAsFuel = true;
 
 		[Name("Tinder fuel time")]
@@ -42,14 +42,13 @@ namespace FireAddons
 		public int tinderFuel = 5;
 
 		[Name("Tinder fuel temperature")]
-		[Description("In Celsius, suggested 5")]
+		[Description("Increase of temp in Celsius, suggested 5")]
 		[Slider(1, 60)]
 		public int tinderFueldeg = 5;
 
-		[Name("Tinder base fire start offset")]
-		[Description("Suggested value 10 - this is to compensate lack of proper fuel. Book is 30, softwood is 10. This will be at level 3 so your base rate will also be higher.")]
-		[Slider(0, 30)]
-		public int tinderBonusOffset = 10;
+		[Name("Tinder fire start modifications")]
+		[Description("Different tinder chnage chance of fire start. Suggested yes")]
+		public bool tinderMatters = true;
 
 		[Name("Tinder Plug: fire start Modification")]
 		[Description("Suggested value 1")]
@@ -156,18 +155,26 @@ namespace FireAddons
 
 			}
 			else
-            {
+			{
 				SetFieldVisible(nameof(lanternStartFire), false);
 				SetFieldVisible(nameof(lanternStartTorch), false);
 				SetFieldVisible(nameof(lanternPenalty), false);
 				SetFieldVisible(nameof(lanternDegredation), false);
 			}
 			if (tinderAsFuel)
-            {
+			{
 				SetFieldVisible(nameof(tinderFuel), true);
+				SetFieldVisible(nameof(tinderFueldeg), true);
+			}
+			else
+			{
+				SetFieldVisible(nameof(tinderFuel), false);
+				SetFieldVisible(nameof(tinderFueldeg), false);
+			}
+			if (tinderMatters)
+            {
 				SetFieldVisible(nameof(tinderBonusPlug), true);
 				SetFieldVisible(nameof(tinderBonusPaper), true);
-				SetFieldVisible(nameof(tinderBonusOffset), true);
 				SetFieldVisible(nameof(tinderBonusNewsprintRoll), true);
 				SetFieldVisible(nameof(tinderBonusNewsprint), true);
 				SetFieldVisible(nameof(tinderBonusCattail), true);
@@ -175,11 +182,9 @@ namespace FireAddons
 				SetFieldVisible(nameof(tinderBonusBark), true);
 			}
 			else
-            {
-				SetFieldVisible(nameof(tinderFuel), false);
+			{
 				SetFieldVisible(nameof(tinderBonusPlug), false);
 				SetFieldVisible(nameof(tinderBonusPaper), false);
-				SetFieldVisible(nameof(tinderBonusOffset), false);
 				SetFieldVisible(nameof(tinderBonusNewsprintRoll), false);
 				SetFieldVisible(nameof(tinderBonusNewsprint), false);
 				SetFieldVisible(nameof(tinderBonusCattail), false);

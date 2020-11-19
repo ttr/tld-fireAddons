@@ -16,9 +16,11 @@ However, since there was no easy way to consume fuel while doing this, idea is t
 Using Lantern will take most time (more than flint) as you will neet to take it cover off (in theory).
 
 ### Tinder.
-Tinder as fuel - when reach of level 3 of firestarting, tinder is not needed for starting fires, therfore tinder will be used as fuel and it will attribiute to starting fire rate.
-Because it goes in place of fuel, Tinder base start offset is for compensate this.
-Regardless of level, Tinder can be added to burning fire.
+Tinder can be used as fuel, to burn for small amount of time and temperature.
+From v1.7 it can be only added after fire is started and regardless of player firestarting level.
+
+Also, separated setting is to have different values for firestarting for tinder (aka TinderMatters).
+From v1.7 it's regardless of player firestarting level.
 
 ### Flint and steel
 Flint is in game but hidden (and no icon) and normally is not crafteble nor lootable.
@@ -35,7 +37,7 @@ Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his 
 ### Embers
 New embers mechanic change it to make it more managable.
 Idea is that wood (hard, soft and reclamed) and coal, can create embers if fire temperature is not too high. High temperature will burn fuel leaving nothing to become embers.
-NOrmally in game, temperature can only increase, so I've added ability to use potted (boiled) watter to reduce heat. You will need to have can/pot in inventory and they will show in 'add fuel' panel. They will not be consumed, but 250ml of water will.
+Normally in game, temperature can only increase, so I've added ability to use potted (boiled) watter to reduce heat. You will need to have can/pot in inventory and they will show in 'add fuel' panel. They will not be consumed, but 250ml of water will.
 
 Details:
 Each fuel have burn time, that time on adding fuel is divided based on "Fuel to embers ratio" setting. That result is substracted from burn time and moved to embers time, with multiplication of "Fuel to embers exchange". This is done up to "Embers max time" - if that time is reached, all fuel time goes to burn time (as in vanilla game).
@@ -55,4 +57,3 @@ With out consuming it (as in, changing it fuel state so it will not be consumed)
 Embers - todo:
  * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity) - there will be no check if it's indoors (probably)
  * fire starting skill - low skill => chance to extinguish fire, high skill, addon of max time to ember state ?
- * restaring fire - check if embers time is reduced correctly based on time "in ember state"

@@ -78,6 +78,39 @@ namespace FireAddons
 
         // based on Fire_RV mod by Deus131
         // will allow use tinder as starting fuel
+        [HarmonyPatch(typeof(FireManager), "PlayerStartFire")]
+        static class FireManager_PlayerStartFire
+        {
+            private static void Prefix(FuelSourceItem tinder, ref float percentChanceSuccess)
+            {
+                if (Settings.options.tinderMatters)
+                {
+                    percentChanceSuccess += FireAddons.GetModifiedFireStartSkillModifier(tinder);
+                    percentChanceSuccess = Mathf.Clamp(percentChanceSuccess, 0f, 100f);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Panel_FireStart), "RefreshChanceOfSuccessLabel")]
+        static class Panel_FireStart_RefreshChanceOfSuccessLabel
+        {
+            private static void Postfix(Panel_FireStart __instance )
+            {
+                if (Settings.options.tinderMatters)
+                {
+                    __instance.m_FireManager = GameManager.GetFireManagerComponent();
+                    FuelSourceItem tinder = __instance.GetSelectedTinder();
+                    if (tinder)
+                    {
+                        float num = float.Parse(__instance.m_Label_ChanceSuccess.text.Replace("%", ""));
+                        num += FireAddons.GetModifiedFireStartSkillModifier(tinder);
+                        num = Mathf.Clamp(num, 0f, 100f);
+                        __instance.m_Label_ChanceSuccess.text = num.ToString("F0") + "%";
+                    }
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(Panel_FireStart))]
         [HarmonyPatch("RefreshList")]
         static class PatchPanel_FireStart_RefreshList
@@ -85,31 +118,23 @@ namespace FireAddons
             private static void Prefix(Panel_FeedFire __instance)
             {
 
-                if (!GameManager.GetSkillFireStarting().TinderRequired())
+                Inventory inventoryComponent = GameManager.GetInventoryComponent();
+                foreach (GearItemObject item in inventoryComponent.m_Items)
                 {
-                    Inventory inventoryComponent = GameManager.GetInventoryComponent();
-                    foreach (GearItemObject item in inventoryComponent.m_Items)
+                    GearItem gearItem = item;
+                    if ((bool)gearItem)
                     {
-                        GearItem gearItem = item;
-                        if ((bool)gearItem)
+                        FuelSourceItem fuelSourceItem = gearItem.m_FuelSourceItem;
+                        if ((bool)fuelSourceItem)
                         {
-                            FuelSourceItem fuelSourceItem = gearItem.m_FuelSourceItem;
-                            if ((bool)fuelSourceItem)
+                            if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
                             {
-                                if (FireAddons.IsNamedTinder(gearItem))
-                                {
-
-                                    FireAddons.ModifyTinder(gearItem);
-
-                                }
-                                if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
-                                {
-                                    FireAddons.ModifyWater(gearItem, false);
-                                }
+                                FireAddons.ModifyWater(gearItem, false);
                             }
                         }
                     }
                 }
+
             }
         }
         // load and save custom data
@@ -147,7 +172,7 @@ namespace FireAddons
                         FuelSourceItem fuelSourceItem = gearItem.m_FuelSourceItem;
                         if ((bool)fuelSourceItem)
                         {
-                            if (FireAddons.IsNamedTinder(gearItem))
+                            if (Settings.options.tinderAsFuel && FireAddons.IsNamedTinder(gearItem))
                             {
                                 FireAddons.ModifyTinder(gearItem);
                             }

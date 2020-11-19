@@ -9,6 +9,7 @@ namespace FireAddons
 {
 	internal class FireAddons : MelonMod
 	{
+		private static float td = 0;
 		private const string SAVE_NAME = "fireAddons";
 		private static List<string> fireFixed = new List<string>();
 		private static int FADSchema = 2;
@@ -47,7 +48,7 @@ namespace FireAddons
 			SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
 		}
 
-		private static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
+		internal static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
 		{
 
 			if (fs.name.Contains("GEAR_NewsprintRoll"))
@@ -109,9 +110,9 @@ namespace FireAddons
 				}
 				gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.tinderFueldeg; // deg C
 				gi.m_FuelSourceItem.m_BurnDurationHours = value;
-				gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
-				gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
-				gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
+				//gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
+				//gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
+				// gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}
 		}
@@ -419,6 +420,14 @@ namespace FireAddons
 						//}
 					}
 				}
+				/*
+				if (td >= 60)
+				{
+					MelonLogger.Log(guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " " + __instance.m_HeatSource.IsTurnedOn());
+					td = 0;
+				}
+				td += deltaTime;
+				*/
 			}
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)

@@ -110,9 +110,6 @@ namespace FireAddons
 				}
 				gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.tinderFueldeg; // deg C
 				gi.m_FuelSourceItem.m_BurnDurationHours = value;
-				//gi.m_FuelSourceItem.m_FireStartDurationModifier = value;
-				//gi.m_FuelSourceItem.m_FireStartSkillModifier = GetModifiedFireStartSkillModifier(gi.m_FuelSourceItem);
-				// gi.m_FuelSourceItem.m_FireStartSkillModifier += Settings.options.tinderBonusOffset;
 				gi.m_FuelSourceItem.m_IsTinder = false;
 			}
 		}
@@ -326,7 +323,6 @@ namespace FireAddons
 			{
 				if (FAD[guid].ver == FADSchema)
 				{
-					//timestamp;
 					FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid].fireState);
 					__instance.FireStateSet(foo);
 					loadFireData(__instance, guid);
@@ -347,28 +343,30 @@ namespace FireAddons
 			float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
 			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
 
-			// apply stored configs to detected fires - only once (on scene chnage)
-			if (!fireFixed.Contains(guid))
-			{
-				applyStoredFAD(__instance, guid);
-			}
 			/* when time acceleration is active, all Update() functions are called, but in end thre is TodMaterial.UpdateAll()
-			 * whcih will calculate fire tiem one more time.
+			 * which will calculate fire time twice.
 			 */
 			if (GameManager.GetTimeOfDayComponent().IsTimeLapseActive())
 			{
 				if (!FADForceReload)
 				{
+					fireFixed.Clear();
 					FADForceReload = true;
 				}
 			}
 			else
 			{
 				if (FADForceReload)
-                {
-					applyStoredFAD(__instance, guid);
+				{
 					FADForceReload = false;
 				}
+
+				// apply stored configs to detected fires if needed
+				if (!fireFixed.Contains(guid))
+				{
+					applyStoredFAD(__instance, guid);
+				}
+
 				if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
 				{
 					// reset embers timer if burning, reduce embers of burned value
@@ -384,9 +382,6 @@ namespace FireAddons
 					//	GameObject obj = __instance.transform.GetParent()?.gameObject;
 					//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
 
-					// sync those - unsynced seems to cause problems when adding fuel to embers.
-					// __instance.m_DurationSecondsToReduceToEmbers = __instance.m_EmberDurationSecondsTOD;
-
 					if (__instance.m_EmberTimer > 0)
 					{
 						__instance.m_UseEmbers = true;
@@ -399,25 +394,11 @@ namespace FireAddons
 
 					if (FAD.ContainsKey(guid))
 					{
-						/*
-						// easy way to update and recalculate - this is edge case after time skip
-						writeFireData(__instance, guid);
-						loadFireData(__instance, guid);
-						if ((__instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds) > 0f || (__instance.m_EmberDurationSecondsTOD - __instance.m_EmberTimer) > 0f)
-						{
-							__instance.FireStateSet(FireState.FullBurn);
-							__instance.m_HeatSource.TurnOn();
-							MelonLogger.Log("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
-						}
-						else
-						{
-						*/
 						MelonLogger.Log("rm " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
 						__instance.m_UseEmbers = false;
 						__instance.m_EmberDurationSecondsTOD = 0;
 						__instance.m_EmberTimer = 0;
 						FAD.Remove(guid);
-						//}
 					}
 				}
 				/*
@@ -484,7 +465,6 @@ namespace FireAddons
 					float fuelmove = fuel.m_FuelSourceItem.m_BurnDurationHours * Settings.options.embersFuelRatio;
 					_fire.m_MaxOnTODSeconds -= fuelmove * 3600;
 					_fire.m_EmberDurationSecondsTOD += (fuelmove * 3600) * Settings.options.embersFuelEx;
-					_fire.m_DurationSecondsToReduceToEmbers = _fire.m_EmberDurationSecondsTOD;
 					_fire.m_BurningTimeTODHours -= fuelmove;
 				}
 			}

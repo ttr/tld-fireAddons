@@ -76,14 +76,12 @@ namespace FireAddons
 
         }
 
-        // based on Fire_RV mod by Deus131
-        // will allow use tinder as starting fuel
         [HarmonyPatch(typeof(FireManager), "PlayerStartFire")]
         static class FireManager_PlayerStartFire
         {
             private static void Prefix(FuelSourceItem tinder, ref float percentChanceSuccess)
             {
-                if (Settings.options.tinderMatters)
+                if (Settings.options.tinderMatters && tinder)
                 {
                     percentChanceSuccess += FireAddons.GetModifiedFireStartSkillModifier(tinder);
                     percentChanceSuccess = Mathf.Clamp(percentChanceSuccess, 0f, 100f);

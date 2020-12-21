@@ -13,7 +13,7 @@ namespace FireAddons
         {
             private static void Postfix(GearItem __instance)
             {
-                FireAddons.MyApplyChanges(__instance);
+                FireAddons.ModifyFirestarters(__instance);
             }
         }
         [HarmonyPatch(typeof(GameManager), "Awake")]
@@ -92,7 +92,7 @@ namespace FireAddons
         [HarmonyPatch(typeof(Panel_FireStart), "RefreshChanceOfSuccessLabel")]
         static class Panel_FireStart_RefreshChanceOfSuccessLabel
         {
-            private static void Postfix(Panel_FireStart __instance )
+            private static void Postfix(Panel_FireStart __instance)
             {
                 if (Settings.options.tinderMatters)
                 {
@@ -109,6 +109,27 @@ namespace FireAddons
             }
         }
 
+        [HarmonyPatch(typeof(Fire), "PlayerBeginCreate")]
+        static class Fire_PlayerBeginCreate
+        {
+            private static void Postfix(Fire __instance)
+            {
+                // if tinder matters is on, add fuelvalue to burntime on start
+                // if not, but embers is enabled, add vanilla 500s
+                MelonLogger.Log("PBC: " + __instance.m_MaxOnTODSeconds);
+                if (Settings.options.tinderMatters)
+                {
+
+                    __instance.m_MaxOnTODSeconds += Settings.options.tinderFuel * 60f;
+
+                }
+                else if (Settings.options.embersSystem)
+                {
+                    __instance.m_MaxOnTODSeconds += 500f;
+                }
+                MelonLogger.Log("PBC2: " + __instance.m_MaxOnTODSeconds);
+            }
+        }
         [HarmonyPatch(typeof(Panel_FireStart))]
         [HarmonyPatch("RefreshList")]
         static class PatchPanel_FireStart_RefreshList

@@ -136,7 +136,7 @@ namespace FireAddons
 			}
 		}
 
-		internal static void MyApplyChanges(GearItem gi)
+		internal static void ModifyFirestarters(GearItem gi)
 		{
 
 			// Lamp as firestarter
@@ -233,7 +233,7 @@ namespace FireAddons
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
 
-		private static void writeFireData(Fire __instance, string guid)
+		private static void WriteFireData(Fire __instance, string guid)
         {
 			// create new instance if needed
 			if (!FAD.ContainsKey(guid))
@@ -250,7 +250,7 @@ namespace FireAddons
 			FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
 			FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
 		}
-		private static void loadFireData(Fire __instance, string guid)
+		private static void LoadFireData(Fire __instance, string guid)
         {
 			if (FAD.ContainsKey(guid))
 			{
@@ -267,11 +267,11 @@ namespace FireAddons
 			}
 
 		}
-		private static void resetEmbersOnRestart(Fire __instance)
+		private static void ResetEmbersOnRestart(Fire __instance)
         {
 			__instance.m_EmberDurationSecondsTOD -= __instance.m_EmberTimer;
-			__instance.m_EmberTimer = 0;
 			__instance.m_MaxOnTODSeconds += __instance.m_EmberTimer;
+			__instance.m_EmberTimer = 0;
 			__instance.m_HeatSource.m_TurnedOn = true;
 
 		}
@@ -317,7 +317,7 @@ namespace FireAddons
 				}
 			}
 		}
-		private static void applyStoredFAD(Fire __instance, string guid)
+		private static void ApplyStoredFAD(Fire __instance, string guid)
         {
 			if (FAD.ContainsKey(guid))
 			{
@@ -325,7 +325,7 @@ namespace FireAddons
 				{
 					FireState foo = (FireState)System.Enum.Parse(typeof(FireState), FAD[guid].fireState);
 					__instance.FireStateSet(foo);
-					loadFireData(__instance, guid);
+					LoadFireData(__instance, guid);
 					// always on load, enable embers -> this way we should have embers when fire burned out off-scene
 					__instance.m_UseEmbers = true;
 				}
@@ -364,15 +364,14 @@ namespace FireAddons
 				// apply stored configs to detected fires if needed
 				if (!fireFixed.Contains(guid))
 				{
-					applyStoredFAD(__instance, guid);
+					ApplyStoredFAD(__instance, guid);
 				}
-
 				if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
 				{
 					// reset embers timer if burning, reduce embers of burned value
 					if (__instance.m_EmberTimer != 0 && remSec > 0)
 					{
-						resetEmbersOnRestart(__instance);
+						ResetEmbersOnRestart(__instance);
 					}
 					if (remSec > 0)
 					{
@@ -387,7 +386,9 @@ namespace FireAddons
 						__instance.m_UseEmbers = true;
 						__instance.m_HeatSource.m_MaxTempIncrease = 5;
 					}
-					writeFireData(__instance, guid);
+					WriteFireData(__instance, guid);
+					// orginally this is 7 mins before end of fuel time, lets change this to 1s
+					__instance.m_DurationSecondsToReduceToEmbers = 1;
 				}
 				else
 				{
@@ -455,7 +456,7 @@ namespace FireAddons
 			// added fuel while embers
 			else if (_fire.m_EmberTimer > 0f )
             {
-				resetEmbersOnRestart(_fire);
+				ResetEmbersOnRestart(_fire);
 			}
 			// try add fuel to embers unless it wasn't comming out from ember state.
 			else if (fuel.name.ToLower().Contains("wood") || fuel.name.ToLower().Contains("coal"))

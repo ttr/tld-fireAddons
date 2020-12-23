@@ -116,7 +116,6 @@ namespace FireAddons
             {
                 // if tinder matters is on, add fuelvalue to burntime on start
                 // if not, but embers is enabled, add vanilla 500s
-                MelonLogger.Log("PBC: " + __instance.m_MaxOnTODSeconds);
                 if (Settings.options.tinderMatters)
                 {
 
@@ -127,7 +126,6 @@ namespace FireAddons
                 {
                     __instance.m_MaxOnTODSeconds += 500f;
                 }
-                MelonLogger.Log("PBC2: " + __instance.m_MaxOnTODSeconds);
             }
         }
         [HarmonyPatch(typeof(Panel_FireStart))]
@@ -293,7 +291,7 @@ namespace FireAddons
         {
             public static void Postfix(Fire __instance, ref bool __result)
             {
-                MelonLogger.Log(__instance.name + " IsBurning " + __result);
+                //MelonLogger.Log(__instance.name + " IsBurning " + __result);
                 if (Settings.options.embersSystem && __result && __instance.m_UseEmbers)
                 {
                     __result = false;

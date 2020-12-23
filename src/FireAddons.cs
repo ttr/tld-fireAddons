@@ -37,14 +37,12 @@ namespace FireAddons
 					entry.Value.Populate(lFAD);
 					FAD.Add(entry.Key, lFAD);
 				}
-				//MelonLogger.Log("FAD loaded " + JSON.Dump(FAD, EncodeOptions.NoTypeHints));
 			}
 		}
 
 		internal static void SaveData(SaveSlotType gameMode, string name)
 		{
 			string data = JSON.Dump(FAD, EncodeOptions.NoTypeHints);
-			//MelonLogger.Log("FAD saved " + data );
 			SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
 		}
 
@@ -269,8 +267,11 @@ namespace FireAddons
 		}
 		private static void ResetEmbersOnRestart(Fire __instance)
         {
-			__instance.m_EmberDurationSecondsTOD -= __instance.m_EmberTimer;
-			__instance.m_MaxOnTODSeconds += __instance.m_EmberTimer;
+			if ( __instance.m_EmberDurationSecondsTOD > __instance.m_EmberTimer)
+            {
+				__instance.m_EmberDurationSecondsTOD -= __instance.m_EmberTimer;
+				__instance.m_MaxOnTODSeconds += __instance.m_EmberTimer;
+			}
 			__instance.m_EmberTimer = 0;
 			__instance.m_HeatSource.m_TurnedOn = true;
 

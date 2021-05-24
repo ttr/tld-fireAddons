@@ -150,9 +150,18 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lanternStartFire;
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lanternStartTorch;
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lanternPenalty;
-				gi.m_FireStarterItem.m_OnUseSoundEvent = "Play_SNDACTIONFIREFLINTLOOP";
+				gi.m_FireStarterItem.m_OnUseSoundEvent = "PLAY_LANTERNLIGHT";
 
 			}
+
+			// Lenses
+			if (gi.name.Contains("GEAR_MagnifyingLens") || gi.name.Contains("GEAR_Binoculars"))
+            {
+				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.lensesDegredation;
+				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.lensesStartFire;
+				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.lensesStartTorch;
+				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lensesPenalty;
+            }
 
 			// Flint
 			if (gi.name.Contains("GEAR_FlintAndSteel"))
@@ -162,8 +171,19 @@ namespace FireAddons
 					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
 				}
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
+				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.flintStartFire;
+				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.flintStartTorch;
+				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.flintPenalty;
 				gi.m_StartCondition = GearStartCondition.Perfect;
 				gi.m_WeightKG = 1.5f; // combined weight of components it's made.
+
+			}
+			if (gi.name.Contains("GEAR_Firestriker"))
+            {
+				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.firestrikerDegredation;
+				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.firestrikerStartFire;
+				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.firestrikerStartTorch;
+				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.firestrikerPenalty;
 			}
 		}
 

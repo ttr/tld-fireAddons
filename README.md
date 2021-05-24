@@ -15,6 +15,9 @@ However, since there was no easy way to consume fuel while doing this, idea is t
 
 Using Lantern will take most time (more than flint) as you will neet to take it cover off (in theory).
 
+### Lenses
+This is used to modify fire starting parameters for Magnifing glass and binoculars (if installed).
+
 ### Tinder.
 Tinder can be used as fuel, to burn for small amount of time and temperature.
 From v1.7 it can be only added after fire is started and regardless of player firestarting level.

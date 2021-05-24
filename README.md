@@ -34,9 +34,12 @@ Also, if game had shovel as lootable, that could be more realistic flint.
 
 Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
 
-### Embers
-New embers mechanic change it to make it more managable.
-Idea is that wood (hard, soft and reclamed) and coal, can create embers if fire temperature is not too high. High temperature will burn fuel leaving nothing to become embers.
+### Embers / Smoldering fuel
+Note - This was called embers but more accurate name should be "smoldering of fuel". Whole concept is that low temperature burn, would not consume all fuel and in the end, it would be left smoldering. However I've called it wrongly as "embers" (mostly because I've builed on existing vanilla embers), so most of this documentation and in mod it's called this way.
+In short - if you enable new embers mechanics, think of it as smoldering and all in-game references to embers are actually smoldering fuel.
+---
+
+Idea is that wood (hard, soft and reclamed) and coal, can create embers if fire temperature is not too high. High temperature will burn all fuel leaving nothing to become embers.
 Normally in game, temperature can only increase, so I've added ability to use potted (boiled) watter to reduce heat. You will need to have can/pot in inventory and they will show in 'add fuel' panel. They will not be consumed, but 250ml of water will.
 
 Details:
@@ -52,7 +55,7 @@ Thanks to [Digitalzombie](https://github.com/DigitalzombieTLD) for help with hov
 Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)
 
 Embers - using can/pot - after 1st use, GUI will show NONE instead of object name - this is due to fact can/pot are consumed and recreated.
-With out consuming it (as in, changing it fuel state so it will not be consumed) that chnage state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with.
+With out consuming it (as in, changing it fuel state so it will not be consumed) that change state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with (even as having in inverntory, or on a ground).
 
 Embers - todo:
  * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity) - there will be no check if it's indoors (probably)

@@ -99,18 +99,19 @@ namespace FireAddons
 		[Slider(0f, 20f)]
 		public float flintDegredation = 0.2f;
 
+
 		[Section("Embers")]
-		[Name("Reworked embers")]
-		[Description("Enable reworked embers system - see Readme")]
+		[Name("Reworked embers (smoldering fuel)")]
+		[Description("Enable reworked embers (smoldering fuel) system - see Readme on github for exact details.")]
 		public bool embersSystem = true;
 
 		[Name("Embers max time")]
-		[Description("Maximum time embers will last, in hours")]
+		[Description("Maximum time embers will last, in hours.")]
 		[Slider(0f, 12f)]
 		public float embersTime = 8f;
 
 		[Name("Burnout temperature")]
-		[Description("Temperature above which fuel will be burning out from ember store. See next setting")]
+		[Description("Temperature above which fuel will be burning out from ember store. See next setting.")]
 		[Slider(20, 50)]
 		public int embersBunoutTemp = 30;
 
@@ -120,12 +121,12 @@ namespace FireAddons
 		public float embersBunoutRatio = 0.5f;
 
 		[Name("Fuel to embers ratio")]
-		[Description("Ratio of fuel is transfered to embers on fuel add")]
+		[Description("Fraction of fuel is transfered to embers on fuel add. Used with next settings.")]
 		[Slider(0.05f, 0.5f, NumberFormat = "{0:F2}")]
 		public float embersFuelRatio = 0.2f;
 
 		[Name("Fuel to embers exchange")]
-		[Description("Ratio of fuel is transfered to embers on fuel add")]
+		[Description("Multiplier of above fraction, to be added to ember timer.")]
 		[Slider(1f, 5f)]
 		public float embersFuelEx = 2f;
 
@@ -134,9 +135,9 @@ namespace FireAddons
 		[Slider(1, 30)]
 		public int waterTempRemoveDeg = 15;
 
-
-
-
+		[Name("Prevent cooking while in ember state")]
+		[Description("Will disable cooking/boiling while stove/campfire is in 'ember state' when new ember/smoldering mechanic is used. Setting this to false, will make new mechanic useless and they will only 'extend burn time' (yet this ability was requiesed). Recommended: true.")]
+		public bool embersSystemNoCooking = true;
 
 		protected override void OnChange(FieldInfo field, object oldValue, object newValue)
 		{
@@ -201,6 +202,27 @@ namespace FireAddons
             {
 				SetFieldVisible(nameof(flintSmeltEnable), false);
 				SetFieldVisible(nameof(flintDegredation), false);
+			}
+			if (embersSystem)
+            {
+				SetFieldVisible(nameof(embersTime), true);
+				SetFieldVisible(nameof(embersBunoutTemp), true);
+				SetFieldVisible(nameof(embersBunoutRatio), true);
+				SetFieldVisible(nameof(embersFuelRatio), true);
+				SetFieldVisible(nameof(embersFuelEx), true);
+				SetFieldVisible(nameof(waterTempRemoveDeg), true);
+				SetFieldVisible(nameof(embersSystemNoCooking), true);
+			}
+			else
+            {
+				SetFieldVisible(nameof(embersTime), false);
+				SetFieldVisible(nameof(embersBunoutTemp), false);
+				SetFieldVisible(nameof(embersBunoutRatio), false);
+				SetFieldVisible(nameof(embersFuelRatio), false);
+				SetFieldVisible(nameof(embersFuelEx), false);
+				SetFieldVisible(nameof(waterTempRemoveDeg), false);
+				SetFieldVisible(nameof(embersSystemNoCooking), false);
+
 			}
 		}
 	}

@@ -279,7 +279,7 @@ namespace FireAddons
         {
             public static void Postfix(CookingPotItem __instance, ref bool __result)
             {
-                if (Settings.options.embersSystem && __result && __instance.m_FireBeingUsed.m_UseEmbers)
+                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __instance.m_FireBeingUsed?.m_EmberTimer > 0 && __result)
                 {
                     __result = false;
                 }
@@ -291,8 +291,7 @@ namespace FireAddons
         {
             public static void Postfix(Fire __instance, ref bool __result)
             {
-                //MelonLogger.Log(__instance.name + " IsBurning " + __result);
-                if (Settings.options.embersSystem && __result && __instance.m_UseEmbers)
+                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __instance?.m_EmberTimer > 0 && __result)
                 {
                     __result = false;
                 }

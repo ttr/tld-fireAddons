@@ -260,7 +260,7 @@ namespace FireAddons
 				__instance.m_FuelHeatIncrease = FAD[guid].heatTemp;
 				__instance.m_HeatSource.m_MaxTempIncrease = FAD[guid].heatTemp;
 				__instance.m_HeatSource.m_TempIncrease = FAD[guid].heatTemp;
-				CalculateFireTimers(__instance, timeDiff, __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds);
+				CalculateFireTimers(__instance, timeDiff, __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds, true);
 				MelonLogger.Log("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
 			}
 
@@ -276,7 +276,7 @@ namespace FireAddons
 			__instance.m_HeatSource.m_TurnedOn = true;
 
 		}
-		private static void CalculateFireTimers(Fire __instance, float timeDiff, float remSec)
+		private static void CalculateFireTimers(Fire __instance, float timeDiff, float remSec, bool reload=false)
         {
 			float currTemp = __instance.GetCurrentTempIncrease();
 			if (timeDiff > remSec)
@@ -287,7 +287,10 @@ namespace FireAddons
 			}
 			else
 			{
-				__instance.m_ElapsedOnTODSeconds += timeDiff;
+				if (reload)
+				{
+					__instance.m_ElapsedOnTODSeconds += timeDiff;
+				}
 			}
 			if (__instance.m_EmberDurationSecondsTOD < 0)
 			{
@@ -447,7 +450,7 @@ namespace FireAddons
 				}
 				/* we consume can/pot so recreate it
 				 * we could hack it to not consume but after some time (minutes) of feed fire dialog, said object is getting corrupted in such way that it's lagging game
-				 *  on each interaction with said item
+				 * on each interaction with said item
 				 */
 				GearItem clone = Utils.InstantiateGearFromPrefabName(fuel.name);
 				clone.m_CurrentHP = fuel.m_CurrentHP;

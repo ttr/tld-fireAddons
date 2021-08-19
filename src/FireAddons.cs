@@ -363,77 +363,78 @@ namespace FireAddons
 		}
 		internal static void CalculateEmbers(Fire __instance)
 		{
-			float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
-			float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
-			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
-
-			/* when time acceleration is active, all Update() functions are called, but in end thre is TodMaterial.UpdateAll()
-			 * which will calculate fire time twice.
-			 */
-			if (GameManager.GetTimeOfDayComponent().IsTimeLapseActive())
+			if (!__instance.m_IsPerpetual)
 			{
-				if (!FADForceReload)
-				{
-					fireFixed.Clear();
-					FADForceReload = true;
-				}
-			}
-			else
-			{
-				if (FADForceReload)
-				{
-					FADForceReload = false;
-				}
+				float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
+				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
+				string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
 
-				// apply stored configs to detected fires if needed
-				if (!fireFixed.Contains(guid))
-				{
-					ApplyStoredFAD(__instance, guid);
-				}
-				if (__instance.GetFireState() != FireState.Off && (!__instance.m_IsPerpetual))
-				{
-					// reset embers timer if burning, reduce embers of burned value
-					if (__instance.m_EmberTimer != 0 && remSec > 0)
-					{
-						ResetEmbersOnRestart(__instance);
-					}
-					if (remSec > 0)
-					{
-						CalculateFireTimers(__instance, deltaTime, remSec);
-					}
+				/* when time acceleration is active, all Update() functions are called, but in end thre is TodMaterial.UpdateAll()
+				 * which will calculate fire time twice.
+				 */
 
-					//	GameObject obj = __instance.transform.GetParent()?.gameObject;
-					//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
-
-					if (__instance.m_EmberTimer > 0)
+				if (GameManager.GetTimeOfDayComponent().IsTimeLapseActive())
+				{
+					if (!FADForceReload)
 					{
-						__instance.m_UseEmbers = true;
-						__instance.m_HeatSource.m_MaxTempIncrease = 5;
+						fireFixed.Clear();
+						FADForceReload = true;
 					}
-					WriteFireData(__instance, guid);
-					// orginally this is 7 mins before end of fuel time, lets change this to 1s
-					__instance.m_DurationSecondsToReduceToEmbers = 1;
 				}
 				else
 				{
-
-					if (FAD.ContainsKey(guid))
+					if (FADForceReload)
 					{
-						MelonLogger.Log("rm " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
-						__instance.m_UseEmbers = false;
-						__instance.m_EmberDurationSecondsTOD = 0;
-						__instance.m_EmberTimer = 0;
-						FAD.Remove(guid);
+						FADForceReload = false;
 					}
+
+					// apply stored configs to detected fires if needed
+					if (!fireFixed.Contains(guid))
+					{
+						ApplyStoredFAD(__instance, guid);
+					}
+					//MelonLogger.Log(guid + " " +__instance.GetFireState() + " " + __instance.m_FullBurnTriggered + " " + __instance.m_FX.ToString());
+
+
+					if (__instance.GetFireState() == FireState.FullBurn)
+					{
+						// reset embers timer if burning, reduce embers of burned value
+						if (__instance.m_EmberTimer != 0 && remSec > 0)
+						{
+							ResetEmbersOnRestart(__instance);
+						}
+						if (remSec > 0)
+						{
+							CalculateFireTimers(__instance, deltaTime, remSec);
+						}
+
+						//	GameObject obj = __instance.transform.GetParent()?.gameObject;
+						//if (obj && (obj.name.ToLower().Contains("woodstove") || obj.name.ToLower().Contains("potbellystove")))
+
+						if (__instance.m_EmberTimer > 0)
+						{
+							__instance.m_UseEmbers = true;
+							__instance.m_HeatSource.m_MaxTempIncrease = 5;
+						}
+						WriteFireData(__instance, guid);
+						// orginally this is 7 mins before end of fuel time, lets change this to 1s
+						__instance.m_DurationSecondsToReduceToEmbers = 1;
+					}
+					else if (__instance.GetFireState() == FireState.Off)
+					{
+
+						if (FAD.ContainsKey(guid))
+						{
+							MelonLogger.Log("rm " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
+							__instance.m_UseEmbers = false;
+							__instance.m_EmberDurationSecondsTOD = 0;
+							__instance.m_EmberTimer = 0;
+							FAD.Remove(guid);
+						}
+					}
+
+					//MelonLogger.Log(guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " " + __instance.m_HeatSource.IsTurnedOn());
 				}
-				/*
-				if (td >= 60)
-				{
-					MelonLogger.Log(guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " " + __instance.m_HeatSource.IsTurnedOn());
-					td = 0;
-				}
-				td += deltaTime;
-				*/
 			}
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)

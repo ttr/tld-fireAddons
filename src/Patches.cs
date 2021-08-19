@@ -54,6 +54,7 @@ namespace FireAddons
                         }
                     }
         */
+
         [HarmonyPatch(typeof(Panel_FeedFire), "OnFeedFire")]
         internal class Panel_FeedFire_OnFeedFire
         {
@@ -109,25 +110,29 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Fire), "PlayerBeginCreate")]
-        static class Fire_PlayerBeginCreate
+        [HarmonyPatch(typeof(Fire), "ExitFireStarting")]
+        static class Fire_ExitFireStarting
         {
-            private static void Postfix(Fire __instance)
+            private static void Postfix(Fire __instance, ref bool success)
             {
-                // if tinder matters is on, add fuelvalue to burntime on start
-                // if not, but embers is enabled, add vanilla 500s
-                if (Settings.options.tinderMatters)
+                if (success)
                 {
+                    // if tinder matters is on, add fuelvalue to burntime on start
+                    // if not, but embers is enabled, add vanilla 500s
+                    if (Settings.options.tinderMatters)
+                    {
 
-                    __instance.m_MaxOnTODSeconds += Settings.options.tinderFuel * 60f;
+                        __instance.m_MaxOnTODSeconds += Settings.options.tinderFuel * 60f;
 
-                }
-                else if (Settings.options.embersSystem)
-                {
-                    __instance.m_MaxOnTODSeconds += 500f;
+                    }
+                    else if (Settings.options.embersSystem)
+                    {
+                        __instance.m_MaxOnTODSeconds += 500f;
+                    }
                 }
             }
         }
+
         [HarmonyPatch(typeof(Panel_FireStart))]
         [HarmonyPatch("RefreshList")]
         static class PatchPanel_FireStart_RefreshList
@@ -154,6 +159,7 @@ namespace FireAddons
 
             }
         }
+
         // load and save custom data
         [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
         internal class SaveGameSystemPatch_RestoreGlobalData
@@ -231,6 +237,7 @@ namespace FireAddons
         {
             private static void Postfix(Campfire __instance, ref string __result)
             {
+
                 if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
@@ -257,6 +264,7 @@ namespace FireAddons
             {
                 if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
+
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
@@ -271,6 +279,7 @@ namespace FireAddons
                         __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
                     }
                 }
+
             }
         }
 
@@ -279,7 +288,7 @@ namespace FireAddons
         {
             public static void Postfix(CookingPotItem __instance, ref bool __result)
             {
-                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __instance.m_FireBeingUsed?.m_EmberTimer > 0 && __result)
+                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance.m_FireBeingUsed?.m_EmberTimer > 0)
                 {
                     __result = false;
                 }
@@ -291,11 +300,12 @@ namespace FireAddons
         {
             public static void Postfix(Fire __instance, ref bool __result)
             {
-                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __instance?.m_EmberTimer > 0 && __result)
+                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance?.m_EmberTimer > 0)
                 {
                     __result = false;
                 }
             }
         }
+
     }
 }

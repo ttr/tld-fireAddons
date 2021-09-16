@@ -111,13 +111,13 @@ namespace FireAddons
 		public bool tinderAsFuel = true;
 
 		[Name("Tinder fuel time")]
-		[Description("In minutes. Vanilla: 0, suggested 5.")]
-		[Slider(1, 60)]
-		public int tinderFuel = 5;
+		[Description("In minutes. Vanilla: 0, suggested 1-2.")]
+		[Slider(0, 30)]
+		public int tinderFuel = 2;
 
 		[Name("Tinder fuel temperature")]
-		[Description("Increase of temp in Celsius. Vanilla: 0, suggested 5.")]
-		[Slider(1, 60)]
+		[Description("Increase of temp in Celsius. Vanilla: 0, suggested 3-5.")]
+		[Slider(0, 30)]
 		public int tinderFueldeg = 5;
 
 		[Name("Tinder fire start modifications")]

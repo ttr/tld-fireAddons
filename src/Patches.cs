@@ -238,12 +238,12 @@ namespace FireAddons
             private static void Postfix(Campfire __instance, ref string __result)
             {
 
-                if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                if (!__instance.m_Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.m_Fire.GetFireState() == FireState.FullBurn && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
-                    // those spaces are needed for 'canvas' as it's calculateb based on 1st line lenght
+                    // those spaces are needed for 'canvas' as it's calculated based on 1st line lenght
                     if (__instance.m_Fire.m_EmberTimer == 0)
                     {
                         string[] input = __result.Split('\n');
@@ -262,14 +262,14 @@ namespace FireAddons
         {
             public static void Postfix(WoodStove __instance, ref string __result)
             {
-                if (Settings.options.embersSystem && __instance.m_Fire.GetFireState() != FireState.Off && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                if (!__instance.m_Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.m_Fire.GetFireState() == FireState.FullBurn && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
                 {
 
                     float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
 
-                    // those spaces are needed for 'canvas' as it's calculateb based on 1st line lenght
+                    // those spaces are needed for 'canvas' as it's calculated based on 1st line lenght
                     if (__instance.m_Fire.m_EmberTimer == 0)
                     {
                         string[] input = __result.Split('\n');

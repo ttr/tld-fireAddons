@@ -199,6 +199,20 @@ namespace FireAddons
 		[Description("Will disable cooking/boiling while stove/campfire is in 'ember state' when new ember/smoldering mechanic is used. Setting this to false, will make new mechanic useless and they will only 'extend burn time' (yet this ability was requiesed). Recommended: true.")]
 		public bool embersSystemNoCooking = true;
 
+		[Name("Use Charcoal as fuel")]
+		[Description("Allow using charcal as fuel. Set to false if other mod is adding charcoal as fuel")]
+		public bool burnCharcoal = true;
+
+		[Name("... burn time")]
+		[Description("Recommended 20 min.")]
+		[Slider(5, 40)]
+		public int burnCharcoalTime = 20;
+
+		[Name("... temp increase")]
+		[Description("Recommended 5 deg")]
+		[Slider(0, 15)]
+		public int burnCharcoalTemp = 5;
+
 		protected override void OnChange(FieldInfo field, object oldValue, object newValue)
 		{
 			RefreshFields();
@@ -289,6 +303,16 @@ namespace FireAddons
 				SetFieldVisible(nameof(waterTempRemoveDeg), false);
 				SetFieldVisible(nameof(embersSystemNoCooking), false);
 
+			}
+			if (burnCharcoal)
+            {
+				SetFieldVisible(nameof(burnCharcoalTime), true);
+				SetFieldVisible(nameof(burnCharcoalTemp), true);
+			}
+			else
+            {
+				SetFieldVisible(nameof(burnCharcoalTime), false);
+				SetFieldVisible(nameof(burnCharcoalTemp), false);
 			}
 		}
 	}

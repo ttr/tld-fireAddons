@@ -100,15 +100,28 @@ namespace FireAddons
 			// if we modified it already, skip, otherwise You will have infinite burn time ;)
 			if (gi.m_FuelSourceItem.m_IsTinder)
 			{
-				float value = Settings.options.tinderFuel / 60f;
 				if (!gi.m_FuelSourceItem)
 				{
 					gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
 				}
 				gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.tinderFueldeg; // deg C
-				gi.m_FuelSourceItem.m_BurnDurationHours = value;
+				gi.m_FuelSourceItem.m_BurnDurationHours = Settings.options.tinderFuel / 60f;
 				gi.m_FuelSourceItem.m_IsTinder = false;
+				gi.m_FuelSourceItem.m_HeatInnerRadius = 1;
+				gi.m_FuelSourceItem.m_HeatInnerRadius = 1;
 			}
+		}
+		internal static void ModifyCharcoal(GearItem gi)
+        {
+			if (!gi.m_FuelSourceItem)
+			{
+				gi.m_FuelSourceItem = gi.gameObject.AddComponent<FuelSourceItem>();
+			}
+			gi.m_FuelSourceItem.m_HeatIncrease = Settings.options.burnCharcoalTemp; // deg C
+			gi.m_FuelSourceItem.m_BurnDurationHours = Settings.options.burnCharcoalTime / 60f;
+			gi.m_FuelSourceItem.m_IsTinder = false;
+			gi.m_FuelSourceItem.m_HeatInnerRadius = 5;
+			gi.m_FuelSourceItem.m_HeatInnerRadius = 10;
 		}
 		internal static void ModifyWater(GearItem gi, bool state)
 		{
@@ -289,6 +302,11 @@ namespace FireAddons
 			}
 
 		}
+
+		private static void RemoveFireData(Fire __instance, string guid)
+        {
+			FAD.Remove(guid);
+        }
 		private static void ResetEmbersOnRestart(Fire __instance)
         {
 			if ( __instance.m_EmberDurationSecondsTOD > __instance.m_EmberTimer)
@@ -360,7 +378,7 @@ namespace FireAddons
 				}
 				else
 				{
-					FAD.Remove(guid);
+					RemoveFireData(__instance, guid);
 				}
 				fireFixed.Add(guid);
 			}
@@ -440,7 +458,7 @@ namespace FireAddons
 							__instance.m_UseEmbers = false;
 							__instance.m_EmberDurationSecondsTOD = 0;
 							__instance.m_EmberTimer = 0;
-							FAD.Remove(guid);
+							RemoveFireData(__instance, guid);
 						}
 					}
 					/*
@@ -450,6 +468,18 @@ namespace FireAddons
 					}
 					*/
 				}
+			}
+		}
+		internal static void CalculateCharcoal(Fire __instance)
+        {
+			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
+			MelonLogger.Log(guid + " charcoal " + __instance.m_NumGeneratedCharcoalPieces);
+			if (FAD.ContainsKey(guid) && __instance.m_NumGeneratedCharcoalPieces <0)
+            {
+				float tmp = __instance.m_NumGeneratedCharcoalPieces;
+				__instance.m_NumGeneratedCharcoalPieces = 0;
+				__instance.m_BurningTimeTODHours = 0;
+				MelonLogger.Log(guid + " capping charcoal to 0 from " + tmp);
 			}
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)
@@ -498,8 +528,8 @@ namespace FireAddons
             {
 				ResetEmbersOnRestart(_fire);
 			}
-			// try add fuel to embers unless it wasn't comming out from ember state.
-			else if (fuel.name.ToLower().Contains("wood") || fuel.name.ToLower().Contains("coal"))
+			// try add fuel to embers unless it wasn't comming out from ember state; only for certian fuels
+			else if (fuel.name.ToLower().Contains("wood") || fuel.name.ToLower().StartsWith("gear_coal") || fuel.name.ToLower().StartsWith("gear_charcoal"))
 			{
 				if (_fire.GetRemainingLifeTimeSeconds() < 39600 && (_fire.m_EmberDurationSecondsTOD < (Settings.options.embersTime * 3600)))
 				{
@@ -507,19 +537,26 @@ namespace FireAddons
 					_fire.m_MaxOnTODSeconds -= fuelmove * 3600;
 					_fire.m_EmberDurationSecondsTOD += (fuelmove * 3600) * Settings.options.embersFuelEx;
 					_fire.m_BurningTimeTODHours -= fuelmove;
+
 				}
 			}
+			// If charcoal was added, hack charcoal values
+			if (fuel.name.ToLower().StartsWith("gear_charcoal"))
+            {
+				_fire.m_NumGeneratedCharcoalPieces -= 1;
+			}
+
 		}
 	}
 	internal class FireAddonsData
     {
-		public int ver;
-		public float timestamp;
-		public string fireState;
-		public float embersSeconds;
-		public float emberTimer;
-		public float burnSeconds;
-		public float burnMaxSeconds;
-		public float heatTemp;
+		public int ver { get; set; }
+		public float timestamp { get; set; }
+		public string fireState { get; set; }
+		public float embersSeconds { get; set; }
+		public float emberTimer { get; set; }
+		public float burnSeconds { get; set; }
+		public float burnMaxSeconds { get; set; }
+		public float heatTemp { get; set; }
 	}
 }

@@ -72,6 +72,19 @@ namespace FireAddons
                 if (!GameManager.m_IsPaused && Settings.options.embersSystem)
                 {
                     FireAddons.CalculateEmbers(__instance);
+
+                }
+            }
+
+        }
+        [HarmonyPatch(typeof(Fire), "TurnOff")]
+        internal class Fire_Turnoff_Postfix
+        {
+            private static void Postfix(Fire __instance)
+            {
+                if (!GameManager.m_IsPaused && Settings.options.burnCharcoal)
+                {
+                    FireAddons.CalculateCharcoal(__instance);
                 }
             }
 
@@ -146,6 +159,10 @@ namespace FireAddons
                     GearItem gearItem = item;
                     if ((bool)gearItem)
                     {
+                        if (Settings.options.burnCharcoal && gearItem.name == "GEAR_Charcoal")
+                        {
+                            FireAddons.ModifyCharcoal(gearItem);
+                        }
                         FuelSourceItem fuelSourceItem = gearItem.m_FuelSourceItem;
                         if ((bool)fuelSourceItem)
                         {
@@ -203,6 +220,10 @@ namespace FireAddons
                         if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
                         {
                             FireAddons.ModifyWater(gearItem, true);
+                        }
+                        if (Settings.options.burnCharcoal && gearItem.name == "GEAR_Charcoal")
+                        {
+                            FireAddons.ModifyCharcoal(gearItem);
                         }
                     }
                 }

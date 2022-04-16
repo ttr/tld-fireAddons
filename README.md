@@ -2,6 +2,7 @@
 
 This is mod for TLD 1.83+ 
 It allows to use Lantern as fire starter and at level 3 firestarting tinder can be used as fuel which will add buffs there.
+Also adds smoldering fuel (extended embers), flint and steel firestarter and ability to use charcoal as fuel.
 
 ## Settings and concepts behind ideas.
 
@@ -41,6 +42,11 @@ Also, if game had shovel as lootable, that could be more realistic "steel" copon
 
 Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
 
+### Charcoal
+
+Ability touse charoal as fuel. If any other mod provide this functionlaity it might cause conflicts, so pleae disable it in settings.
+Also, core game mechanics do generate one charcoal per hour of burn fire - this could cause infinitive fuel source. So this mod, every time when charcoal is added to fire, will reduce amount of generated charcoal.
+
 ### Embers / Smoldering fuel
 
 Note - This was called embers but more accurate name should be "smoldering of fuel". Whole concept is that low temperature burn, would not consume all fuel and in the end, it would be left smoldering. However I've called it wrongly as "embers" (mostly because I've builed on existing vanilla embers), so most of this documentation and in mod it's called this way.
@@ -65,7 +71,3 @@ Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https
 
 Embers - using can/pot - after 1st use, GUI will show NONE instead of object name - this is due to fact can/pot are consumed and recreated.
 With out consuming it (as in, changing it fuel state so it will not be consumed) that change state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with (even as having in inverntory, or on a ground).
-
-Embers - todo:
- * open fires (cmaprife, barel) will have this at 1/3-1/2 of maximum ember state (faster burnout, less capacity) - there will be no check if it's indoors (probably)
- * fire starting skill - low skill => chance to extinguish fire, high skill, addon of max time to ember state ?

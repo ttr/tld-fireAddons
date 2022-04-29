@@ -550,13 +550,13 @@ namespace FireAddons
 	}
 	internal class FireAddonsData
     {
-		public int ver { get; set; }
-		public float timestamp { get; set; }
-		public string fireState { get; set; }
-		public float embersSeconds { get; set; }
-		public float emberTimer { get; set; }
-		public float burnSeconds { get; set; }
-		public float burnMaxSeconds { get; set; }
-		public float heatTemp { get; set; }
+		public int ver;
+		public float timestamp;
+		public string fireState;
+		public float embersSeconds;
+		public float emberTimer;
+		public float burnSeconds;
+		public float burnMaxSeconds;
+		public float heatTemp;
 	}
 }

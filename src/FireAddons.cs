@@ -313,7 +313,9 @@ namespace FireAddons
 			FAD[guid].burnSeconds = __instance.m_ElapsedOnTODSeconds;
 			FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
 			FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
-		}
+			SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
+
+        }
 		private static void LoadFireData(Fire __instance, string guid)
         {
 			if (FAD.ContainsKey(guid))
@@ -340,6 +342,7 @@ namespace FireAddons
 		private static void RemoveFireData(Fire __instance, string guid)
         {
 			FAD.Remove(guid);
+            SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
         }
 		private static void ResetEmbersOnRestart(Fire __instance)
         {
@@ -398,7 +401,18 @@ namespace FireAddons
 				}
 			}
 		}
-		private static void ApplyStoredFAD(Fire __instance, string guid)
+		internal static void LoadAllFireData()
+		{
+			string? data = SaveMgr.Load("FAD");
+			if (!string.IsNullOrEmpty(data))
+			{
+				fireFixed.Clear();
+				FAD = JSON.Load(data).Make<Dictionary<string, FireAddonsData>>();
+				MelonLogger.Msg("loded FAD");
+			}
+		}
+
+        private static void ApplyStoredFAD(Fire __instance, string guid)
         {
 			if (FAD.ContainsKey(guid))
 			{

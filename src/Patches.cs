@@ -11,6 +11,20 @@ namespace FireAddons
     internal static class Patches
     {
 
+
+        [HarmonyPatch(typeof(GameManager), "Awake")]
+        internal class GameManager_Awake
+        {
+            public static void Prefix()
+            {
+                if (!InterfaceManager.IsMainMenuEnabled())
+                {
+                    FireAddons.LoadAllFireData();
+                }
+            }
+        }
+
+
         [HarmonyPatch(typeof(GearItem), "Awake", null)]
         public class GearItem_Awake
         {
@@ -178,29 +192,7 @@ namespace FireAddons
 
             }
         }
-        /*
-        // load and save custom data
-        [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
-        internal class SaveGameSystemPatch_RestoreGlobalData
-        {
-            internal static void Postfix(string name)
-            {
-                FireAddons.LoadData(name);
-            }
-        }
-
-        [HarmonyPatch(typeof(SaveGameSystem), "SaveGlobalData", new Type[] { typeof(SaveSlotType), typeof(string) })]
-        internal class SaveGameSystemPatch_SaveGlobalData
-        {
-            public static void Postfix(SaveSlotType gameMode, string name)
-            {
-                FireAddons.SaveData();
-            }
-        }
-        */
-
         // based on Fire_RV mod by Deus131
-
         [HarmonyPatch(typeof(Panel_FeedFire), "RefreshFuelSources")]
         internal static class Panel_FeedFire_RefreshFuelSources
         {
@@ -282,7 +274,7 @@ namespace FireAddons
                 return false;
             }
         }
-        /*
+        /* not needed - below one covers all
         [HarmonyPatch(typeof(Campfire), "GetHoverText")]
         internal static class Campfire_GetHoverText
         {

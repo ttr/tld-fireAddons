@@ -1,6 +1,6 @@
 # FireAddons
 
-This is mod for TLD 1.83+ 
+This is mod for TLD 2.27+ 
 It allows to use Lantern as fire starter and at level 3 firestarting tinder can be used as fuel which will add buffs there.
 Also adds smoldering fuel (extended embers), flint and steel firestarter and ability to use charcoal as fuel.
 
@@ -55,19 +55,16 @@ In short - if you enable new embers mechanics, think of it as smoldering and all
 ---
 
 Idea is that wood (hard, soft and reclamed) and coal, can create embers if fire temperature is not too high. High temperature will burn all fuel leaving nothing to become embers.
-Normally in game, temperature can only increase, so I've added ability to use potted (boiled) watter to reduce heat. You will need to have can/pot in inventory and they will show in 'add fuel' panel. They will not be consumed, but 250ml of water will.
+Normally in game, temperature can only increase, so I've added ability to use snow to reduce heat.
 
 Details:
 Each fuel have burn time, that time on adding fuel is divided based on "Fuel to embers ratio" setting. That result is substracted from burn time and moved to embers time, with multiplication of "Fuel to embers exchange". This is done up to "Embers max time" - if that time is reached, all fuel time goes to burn time (as in vanilla game).
 When temperature of fire (heat increase) is above "Burnout temperature", ember time is being reduced and added back to burn time (convering back using "Fuel to embers exchange"). Rate of this transfer depends on temperature - higher temperature, quicker transfer.
 "Burnout ratio" sets how much of "Embers max time" would be burned in 1 hour if fire temperature is 80C or above. This calculated ratio feeds into previous.
-"Water fire cooldown" means how many deg (C) will be reduced per each 250ml water added to fire.
+"Water fire cooldown" means how many deg (C) will be reduced per each coldown usage (throwinf snow on fire).
 
 Embers timer is showed in hover card, next to burn time.
 Thanks to [Digitalzombie](https://github.com/DigitalzombieTLD) for help with hover card.
 
 ## Notes / Issues.
 Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)
-
-Embers - using can/pot - after 1st use, GUI will show NONE instead of object name - this is due to fact can/pot are consumed and recreated.
-With out consuming it (as in, changing it fuel state so it will not be consumed) that change state was corrupting gameitem and after few minutes of "feed Fire" window being open, that item was causing lag spike when interacted with (even as having in inverntory, or on a ground).

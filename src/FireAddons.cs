@@ -1,8 +1,11 @@
 ﻿using MelonLoader;
-using UnhollowerBaseLib;
+using Il2Cpp;
 using UnityEngine;
 using MelonLoader.TinyJSON;
-using System.Collections.Generic;
+using Il2CppTLD.Gear;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using ModData;
+
 
 
 namespace FireAddons
@@ -14,7 +17,9 @@ namespace FireAddons
 		private static int FADSchema = 2;
 		private static bool FADForceReload = false;
 		private static Dictionary<string, FireAddonsData> FAD = new Dictionary<string, FireAddonsData>();
-		public override void OnApplicationStart()
+        internal static ModDataManager SaveMgr = new ModDataManager("FireAddons", false);       
+
+        public override void OnApplicationStart()
 		{
 			Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
 			Settings.OnLoad();
@@ -25,10 +30,13 @@ namespace FireAddons
 		{
 			FAD.Clear();
 			fireFixed.Clear();
-			string data = SaveGameSlots.LoadDataFromSlot(name, SAVE_NAME);
-			if (!string.IsNullOrEmpty(data))
+
+			//string data = SaveGameSlots.LoadDataFromSlot(name, SAVE_NAME);
+			string? data = SaveMgr.Load("FAD");
+
+            if (!string.IsNullOrEmpty(data))
 			{
-				MelonLogger.Log("JSON loaded " + data);
+				MelonLogger.Msg("JSON loaded " + data);
 				var foo = JSON.Load(data);
 				foreach (var entry in foo as ProxyObject)
                 {
@@ -39,10 +47,11 @@ namespace FireAddons
 			}
 		}
 
-		internal static void SaveData(SaveSlotType gameMode, string name)
+		internal static void SaveData()
 		{
 			string data = JSON.Dump(FAD, EncodeOptions.NoTypeHints);
-			SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
+			SaveMgr.Save(data, "FAD");
+			//SaveGameSlots.SaveDataToSlot(gameMode, SaveGameSystem.m_CurrentEpisode, SaveGameSystem.m_CurrentGameId, name, SAVE_NAME, data);
 		}
 
 		internal static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
@@ -77,7 +86,7 @@ namespace FireAddons
 				return Settings.options.tinderBonusCattail;
 			}
 
-			MelonLogger.LogWarning("MISSING TINDER " + fs.name);
+			MelonLogger.Warning("MISSING TINDER " + fs.name);
 			return 0;
 		}
 		internal static bool IsNamedTinder(GearItem gi)
@@ -187,8 +196,6 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.flintStartTorch;
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.flintPenalty;
 				gi.m_StartCondition = GearStartCondition.Perfect;
-				gi.m_WeightKG = 1.5f; // combined weight of components it's made.
-
 			}
 			if (gi.name.Contains("GEAR_Firestriker"))
             {
@@ -206,10 +213,15 @@ namespace FireAddons
 			{
 				// create bp
 
-				BlueprintItem bp_flint = GameManager.GetBlueprints().AddComponent<BlueprintItem>();
+				BlueprintData bp_flint = new();
 				// Inputs
-				bp_flint.m_RequiredGear = new Il2CppReferenceArray<GearItem>(3) { [0] = GetGearItemPrefab("GEAR_Prybar"), [1] = GetGearItemPrefab("GEAR_SharpeningStone"), [2] = GetGearItemPrefab("GEAR_Coal") };
-				bp_flint.m_RequiredGearUnits = new Il2CppStructArray<int>(3) { [0] = 1, [1] = 1, [2] = 1 };
+				bp_flint.m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
+					{
+					[0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Prybar") },
+					[1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_SharpeningStone") },
+					[2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Coal") }
+					};
+
 				bp_flint.m_KeroseneLitersRequired = 0f;
 				bp_flint.m_GunpowderKGRequired = 0f;
 				bp_flint.m_RequiredTool = GetToolItemPrefab("GEAR_Hammer");
@@ -226,7 +238,7 @@ namespace FireAddons
 				bp_flint.m_RequiresLitFire = true;
 				bp_flint.m_RequiredCraftingLocation = CraftingLocation.Forge;
 				bp_flint.m_DurationMinutes = 360;
-				bp_flint.m_CraftingAudio = "PLAY_CRAFTINGGENERIC";
+				bp_flint.m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGGENERIC");
 				bp_flint.m_AppliedSkill = SkillType.ToolRepair;
 				bp_flint.m_ImprovedSkill = SkillType.None;
 
@@ -234,10 +246,14 @@ namespace FireAddons
 				if (Settings.options.flintSmeltEnable)
 				{
 					// re-smelt one
-					BlueprintItem bp_flint2 = GameManager.GetBlueprints().AddComponent<BlueprintItem>();
+					BlueprintData bp_flint2 = new();
 					// Inputs
-					bp_flint2.m_RequiredGear = new Il2CppReferenceArray<GearItem>(3) { [0] = GetGearItemPrefab("GEAR_FlintAndSteel"), [1] = GetGearItemPrefab("GEAR_ScrapMetal"), [2] = GetGearItemPrefab("GEAR_Coal") };
-					bp_flint2.m_RequiredGearUnits = new Il2CppStructArray<int>(3) { [0] = 1, [1] = 3, [2] = 2 };
+					bp_flint2.m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
+                    {
+                        [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_FlintAndSteel") },
+                        [1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ScrapMetal") },
+                        [2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Coal") }
+                    };
 					bp_flint2.m_KeroseneLitersRequired = 0f;
 					bp_flint2.m_GunpowderKGRequired = 0f;
 					bp_flint2.m_RequiredTool = GetToolItemPrefab("GEAR_Hammer");
@@ -254,7 +270,7 @@ namespace FireAddons
 					bp_flint2.m_RequiresLitFire = true;
 					bp_flint2.m_RequiredCraftingLocation = CraftingLocation.Forge;
 					bp_flint2.m_DurationMinutes = 180;
-					bp_flint2.m_CraftingAudio = "PLAY_CRAFTINGGENERIC";
+					bp_flint2.m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGGENERIC");
 					bp_flint2.m_AppliedSkill = SkillType.ToolRepair;
 					bp_flint2.m_ImprovedSkill = SkillType.None;
 				}
@@ -262,8 +278,26 @@ namespace FireAddons
 		}
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
+        public static Il2CppAK.Wwise.Event? MakeAudioEvent(string eventName)
+        {
+            if (eventName == null)
+            {
+                return null;
+            }
+            uint eventId = AkSoundEngine.GetIDFromString(eventName);
+            if (eventId <= 0 || eventId >= 4294967295)
+            {
+                return null;
+            }
 
-		private static void WriteFireData(Fire __instance, string guid)
+            Il2CppAK.Wwise.Event newEvent = new();
+            newEvent.WwiseObjectReference = new WwiseEventReference();
+            newEvent.WwiseObjectReference.objectName = eventName;
+            newEvent.WwiseObjectReference.id = eventId;
+            return newEvent;
+        }
+
+        private static void WriteFireData(Fire __instance, string guid)
         {
 			// create new instance if needed
 			if (!FAD.ContainsKey(guid))
@@ -298,7 +332,7 @@ namespace FireAddons
 				{
 					__instance.m_Campfire.m_State = CampfireState.Lit;
 				}
-				//MelonLogger.Log("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
+				MelonLogger.Msg("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString());
 			}
 
 		}
@@ -390,7 +424,7 @@ namespace FireAddons
 			{
 				float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
 				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
-				string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
+				string guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
 
 				/* when time acceleration is active, all Update() functions are called, but in end thre is TodMaterial.UpdateAll()
 				 * which will calculate fire time twice.
@@ -472,59 +506,25 @@ namespace FireAddons
 		}
 		internal static void CalculateCharcoal(Fire __instance)
         {
-			string guid = Utils.GetGuidFromGameObject(__instance.gameObject);
-			MelonLogger.Log(guid + " charcoal " + __instance.m_NumGeneratedCharcoalPieces);
+			string guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
+			MelonLogger.Msg(guid + " charcoal " + __instance.m_NumGeneratedCharcoalPieces);
 			if (FAD.ContainsKey(guid) && __instance.m_NumGeneratedCharcoalPieces <0)
             {
 				float tmp = __instance.m_NumGeneratedCharcoalPieces;
 				__instance.m_NumGeneratedCharcoalPieces = 0;
 				__instance.m_BurningTimeTODHours = 0;
-				MelonLogger.Log(guid + " capping charcoal to 0 from " + tmp);
+				MelonLogger.Msg(guid + " capping charcoal to 0 from " + tmp);
 			}
 		}
 		internal static void FeedFire(Panel_FeedFire __instance)
 		{
-
-			Fire _fire = __instance.m_Fire;
-			string guid = Utils.GetGuidFromGameObject(_fire.gameObject);
+			
+			Fire _fire = __instance.m_FireplaceInteraction.Fire;
+			string guid = ObjectGuid.GetGuidFromGameObject(_fire.gameObject);
 			GearItem fuel = __instance.GetSelectedFuelSource();
-			// cool off fire with water
-			if (fuel.name.ToLower().Contains("recycledcan") || fuel.name.ToLower().Contains("cookingpot"))
-			{
 
-				GearItem gi_wt = GameManager.GetInventoryComponent().GetPotableWaterSupply();
-				if (gi_wt.m_WaterSupply.m_VolumeInLiters >= 0.25f && _fire.m_HeatSource.m_MaxTempIncrease > Settings.options.waterTempRemoveDeg)
-				{
-
-					GameAudioManager.StopAllSoundsFromGameObject(InterfaceManager.GetSoundEmitter());
-					GameAudioManager.PlaySound(gi_wt.m_PickUpAudio, InterfaceManager.GetSoundEmitter());
-					gi_wt.m_WaterSupply.m_VolumeInLiters -= 0.25f;
-					_fire.ReduceHeatByDegrees(Settings.options.waterTempRemoveDeg);
-				}
-				else if (gi_wt.m_WaterSupply.m_VolumeInLiters < 0.25f)
-				{
-					HUDMessage.AddMessage("Need water in inventory.", false);
-					GameAudioManager.StopAllSoundsFromGameObject(InterfaceManager.GetSoundEmitter());
-					GameAudioManager.PlayGUIError();
-
-				}
-				else
-				{
-					HUDMessage.AddMessage("Temperature is too low.", false);
-					GameAudioManager.StopAllSoundsFromGameObject(InterfaceManager.GetSoundEmitter());
-					GameAudioManager.PlayGUIError();
-				}
-				/* we consume can/pot so recreate it
-				 * we could hack it to not consume but after some time (minutes) of feed fire dialog, said object is getting corrupted in such way that it's lagging game
-				 * on each interaction with said item
-				 */
-				GearItem clone = Utils.InstantiateGearFromPrefabName(fuel.name);
-				clone.m_CurrentHP = fuel.m_CurrentHP;
-				GameManager.GetInventoryComponent().AddGear(clone.gameObject);
-				GameManager.GetInventoryComponent().DestroyGear(fuel.gameObject);
-			}
 			// added fuel while embers
-			else if (_fire.m_EmberTimer > 0f )
+			if (_fire.m_EmberTimer > 0f )
             {
 				ResetEmbersOnRestart(_fire);
 			}

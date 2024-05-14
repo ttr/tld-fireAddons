@@ -1,7 +1,10 @@
-﻿using Harmony;
-using System;
+﻿using HarmonyLib;
 using UnityEngine;
+using Il2Cpp;
+using Il2CppTLD.Gear;
 using MelonLoader;
+using Il2CppEpic.OnlineServices;
+
 
 namespace FireAddons
 {
@@ -16,8 +19,8 @@ namespace FireAddons
                 FireAddons.ModifyFirestarters(__instance);
             }
         }
-        [HarmonyPatch(typeof(GameManager), "Awake")]
-        public class GameManager_Awake
+        [HarmonyPatch(typeof(Panel_Crafting), nameof(Panel_Crafting.Initialize))]
+        public class Panel_Crafting_bpl
         {
             private static void Postfix()
             {
@@ -27,7 +30,7 @@ namespace FireAddons
         [HarmonyPatch(typeof(Panel_Crafting), "ItemPassesFilter")]
         private static class RecipesInToolsRecipes
         {
-            internal static void Postfix(Panel_Crafting __instance, ref bool __result, BlueprintItem bpi)
+            internal static void Postfix(Panel_Crafting __instance, ref bool __result, BlueprintData bpi)
             {
                 if (bpi?.m_CraftedResult?.name == "GEAR_FlintAndSteel" && __instance.m_CurrentCategory == Panel_Crafting.Category.FireStarting)
                 {
@@ -75,8 +78,8 @@ namespace FireAddons
 
                 }
             }
-
         }
+
         [HarmonyPatch(typeof(Fire), "TurnOff")]
         internal class Fire_Turnoff_Postfix
         {
@@ -89,20 +92,21 @@ namespace FireAddons
             }
 
         }
-
-        [HarmonyPatch(typeof(FireManager), "PlayerStartFire")]
-        static class FireManager_PlayerStartFire
+        
+        [HarmonyPatch(typeof(FireManager), "CalculateFireStartSuccess")]
+        static class FireManager_CalculateFireStartSuccess
         {
-            private static void Prefix(FuelSourceItem tinder, ref float percentChanceSuccess)
+            private static void Postfix(FireManager __instance, float __result)
             {
+                FuelSourceItem tinder = InterfaceManager.GetPanel<Panel_FireStart>().GetSelectedTinder();
                 if (Settings.options.tinderMatters && tinder)
                 {
-                    percentChanceSuccess += FireAddons.GetModifiedFireStartSkillModifier(tinder);
-                    percentChanceSuccess = Mathf.Clamp(percentChanceSuccess, 0f, 100f);
+                    __result += FireAddons.GetModifiedFireStartSkillModifier(tinder);
+                    __result = Mathf.Clamp(__result, 0f, 100f);
                 }
             }
         }
-
+        
         [HarmonyPatch(typeof(Panel_FireStart), "RefreshChanceOfSuccessLabel")]
         static class Panel_FireStart_RefreshChanceOfSuccessLabel
         {
@@ -110,7 +114,6 @@ namespace FireAddons
             {
                 if (Settings.options.tinderMatters)
                 {
-                    __instance.m_FireManager = GameManager.GetFireManagerComponent();
                     FuelSourceItem tinder = __instance.GetSelectedTinder();
                     if (tinder)
                     {
@@ -118,6 +121,7 @@ namespace FireAddons
                         num += FireAddons.GetModifiedFireStartSkillModifier(tinder);
                         num = Mathf.Clamp(num, 0f, 100f);
                         __instance.m_Label_ChanceSuccess.text = num.ToString("F0") + "%";
+                        __instance.m_DirtyLabels = true;
                     }
                 }
             }
@@ -134,9 +138,7 @@ namespace FireAddons
                     // if not, but embers is enabled, add vanilla 500s
                     if (Settings.options.tinderMatters)
                     {
-
                         __instance.m_MaxOnTODSeconds += Settings.options.tinderFuel * 60f;
-
                     }
                     else if (Settings.options.embersSystem)
                     {
@@ -176,7 +178,7 @@ namespace FireAddons
 
             }
         }
-
+        /*
         // load and save custom data
         [HarmonyPatch(typeof(SaveGameSystem), "RestoreGlobalData", new Type[] { typeof(string) })]
         internal class SaveGameSystemPatch_RestoreGlobalData
@@ -192,12 +194,13 @@ namespace FireAddons
         {
             public static void Postfix(SaveSlotType gameMode, string name)
             {
-                FireAddons.SaveData(gameMode, name);
+                FireAddons.SaveData();
             }
         }
-
+        */
 
         // based on Fire_RV mod by Deus131
+
         [HarmonyPatch(typeof(Panel_FeedFire), "RefreshFuelSources")]
         internal static class Panel_FeedFire_RefreshFuelSources
         {
@@ -216,10 +219,6 @@ namespace FireAddons
                             {
                                 FireAddons.ModifyTinder(gearItem);
                             }
-                        }
-                        if (Settings.options.embersSystem && (gearItem.name.ToLower().Contains("recycledcan") || gearItem.name.ToLower().Contains("cookingpot")))
-                        {
-                            FireAddons.ModifyWater(gearItem, true);
                         }
                         if (Settings.options.burnCharcoal && gearItem.name == "GEAR_Charcoal")
                         {
@@ -252,52 +251,84 @@ namespace FireAddons
             }
 
         }
-
+        
+        [HarmonyPatch(typeof(Panel_FireStart), "FilterItemFuelSource")]
+        internal static class Panel_FireStart_FilterItemFuelSource
+        {
+            private static bool Prefix(Panel_FireStart __instance, GearItem gi, ref bool __result)
+            {
+                FuelSourceItem fuelSourceItem = gi.GetComponent<FuelSourceItem>();
+                bool temp = !fuelSourceItem.m_IsTinder;
+                if (Settings.options.tinderAsFuel)
+                {
+                    temp = true;
+                }
+                __result = !(fuelSourceItem == null) && temp;
+                return false;
+            }
+        }
+        [HarmonyPatch(typeof(Panel_FeedFire), "FilterItemFuelSource")]
+        internal static class Panel_FeedFire_FilterItemFuelSource
+        {
+            private static bool Prefix(Panel_FeedFire __instance, GameObject go, ref bool __result)
+            {
+                FuelSourceItem fuelSourceItem = go.GetComponent<FuelSourceItem>();
+                bool temp = !fuelSourceItem.m_IsTinder;
+                if (Settings.options.tinderAsFuel)
+                {
+                    temp = true;
+                }
+                __result =  !(fuelSourceItem == null) && temp;
+                return false;
+            }
+        }
+        /*
         [HarmonyPatch(typeof(Campfire), "GetHoverText")]
         internal static class Campfire_GetHoverText
         {
             private static void Postfix(Campfire __instance, ref string __result)
             {
-
-                if (!__instance.m_Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.m_Fire.GetFireState() == FireState.FullBurn && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                
+                if (!__instance.Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.Fire.GetFireState() == FireState.FullBurn && __instance.Fire.m_EmberDurationSecondsTOD > 0 && __instance.Fire.m_EmberTimer >= 0)
                 {
-                    float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
+                    float emberDiff = __instance.Fire.m_EmberDurationSecondsTOD - __instance.Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
                     // those spaces are needed for 'canvas' as it's calculated based on 1st line lenght
-                    if (__instance.m_Fire.m_EmberTimer == 0)
+                    if (__instance.Fire.m_EmberTimer == 0)
                     {
                         string[] input = __result.Split('\n');
-                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                        __result = "      " + __instance.name.ToString() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
                     }
                     else
                     {
-                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
+                        __result = "      " + __instance.name.ToString() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.Fire.GetHeatIncreaseText() + ")";
                     }
                 }
             }
         }
-
-        [HarmonyPatch(typeof(WoodStove), "GetHoverText")]
-        internal static class WoodStove_GetHoverText
+        */
+        [HarmonyPatch(typeof(FireplaceInteraction), "GetHoverText")]
+        internal static class FireplaceInteraction_GetHoverText
         {
             public static void Postfix(WoodStove __instance, ref string __result)
             {
-                if (!__instance.m_Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.m_Fire.GetFireState() == FireState.FullBurn && __instance.m_Fire.m_EmberDurationSecondsTOD > 0 && __instance.m_Fire.m_EmberTimer >= 0)
+                if (!__instance.Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.Fire.GetFireState() == FireState.FullBurn && __instance.Fire.m_EmberDurationSecondsTOD > 0 && __instance.Fire.m_EmberTimer >= 0)
                 {
 
-                    float emberDiff = __instance.m_Fire.m_EmberDurationSecondsTOD - __instance.m_Fire.m_EmberTimer;
+                    float emberDiff = __instance.Fire.m_EmberDurationSecondsTOD - __instance.Fire.m_EmberTimer;
                     int emberH = (int)Mathf.Floor(emberDiff / 3600);
                     int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
 
                     // those spaces are needed for 'canvas' as it's calculated based on 1st line lenght
-                    if (__instance.m_Fire.m_EmberTimer == 0)
+                    string[] input = __result.Split('\n');
+                    if (__instance.Fire.m_EmberTimer == 0)
                     {
-                        string[] input = __result.Split('\n');
-                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
+                        
+                        __result = "      " + input[0] + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
                     } else
                     {
-                        __result = "      " + __instance.m_LocalizedDisplayName.Text() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.m_Fire.GetHeatIncreaseText() + ")";
+                        __result = "      " + input[0] + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.Fire.GetHeatIncreaseText() + ")";
                     }
                 }
 

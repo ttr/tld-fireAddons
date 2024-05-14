@@ -75,35 +75,6 @@ namespace FireAddons
 		public int firestrikerDegredation = 2;
 
 
-		[Section("Flint")]
-		[Name("Flint: crafting enabled")]
-		public bool flintEnable = true;
-
-		[Name("Flint: resmelt enabled")]
-		[Description("Allow re-smelting flints steel as repair process.")]
-		public bool flintSmeltEnable = true;
-
-		[Name("Flint: time to light fire")]
-		[Description("Default: 4.")]
-		[Slider(0, 40)]
-		public int flintStartFire = 4;
-
-		[Name("Flint: time to light torch")]
-		[Description("Default: 4.")]
-		[Slider(0, 40)]
-		public int flintStartTorch = 4;
-
-		[Name("Flint: fire start chance modification")]
-		[Description("Default: -10.")]
-		[Slider(-30, 30)]
-		public int flintPenalty = -10;
-
-		[Name("Flint: degredation")]
-		[Description("Suggested value 1.")]
-		[Slider(0f, 20f)]
-		public int flintDegredation = 1;
-
-
 		[Section("Tinder")]
 		[Name("Tinder as Fuel")]
 		[Description("Use tinder as fuel (not during starting fire). Vanilla: no, suggested yes.")]
@@ -265,22 +236,6 @@ namespace FireAddons
 				SetFieldVisible(nameof(tinderBonusCash), false);
 				SetFieldVisible(nameof(tinderBonusBark), false);
 
-			}
-			if (flintEnable)
-            {
-				SetFieldVisible(nameof(flintSmeltEnable), true);
-				SetFieldVisible(nameof(flintDegredation), true);
-				SetFieldVisible(nameof(flintStartFire), true);
-				SetFieldVisible(nameof(flintStartTorch), true);
-				SetFieldVisible(nameof(flintPenalty), true);
-			}
-			else
-            {
-				SetFieldVisible(nameof(flintSmeltEnable), false);
-				SetFieldVisible(nameof(flintDegredation), false);
-				SetFieldVisible(nameof(flintStartFire), false);
-				SetFieldVisible(nameof(flintStartTorch), false);
-				SetFieldVisible(nameof(flintPenalty), false);
 			}
 			if (embersSystem)
             {

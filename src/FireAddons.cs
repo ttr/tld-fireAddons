@@ -184,19 +184,6 @@ namespace FireAddons
 				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.lensesPenalty;
             }
 
-			// Flint
-			if (gi.name.Contains("GEAR_FlintAndSteel"))
-			{
-				if (!gi.m_FireStarterItem)
-				{
-					gi.m_FireStarterItem = gi.gameObject.AddComponent<FireStarterItem>();
-				}
-				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.flintDegredation;
-				gi.m_FireStarterItem.m_SecondsToIgniteTinder = Settings.options.flintStartFire;
-				gi.m_FireStarterItem.m_SecondsToIgniteTorch = Settings.options.flintStartTorch;
-				gi.m_FireStarterItem.m_FireStartSkillModifier = Settings.options.flintPenalty;
-				gi.m_StartCondition = GearStartCondition.Perfect;
-			}
 			if (gi.name.Contains("GEAR_Firestriker"))
             {
 				gi.m_FireStarterItem.m_ConditionDegradeOnUse = Settings.options.firestrikerDegredation;
@@ -206,76 +193,7 @@ namespace FireAddons
 			}
 		}
 
-		internal static void Blueprints()
-		{
-			// Buy 'zeobviouslyfakeacc' a beer as i've used his tincan improvements code
-			if (Settings.options.flintEnable)
-			{
-				// create bp
 
-				BlueprintData bp_flint = new();
-				// Inputs
-				bp_flint.m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
-					{
-					[0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Prybar") },
-					[1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_SharpeningStone") },
-					[2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Coal") }
-					};
-
-				bp_flint.m_KeroseneLitersRequired = 0f;
-				bp_flint.m_GunpowderKGRequired = 0f;
-				bp_flint.m_RequiredTool = GetToolItemPrefab("GEAR_Hammer");
-				bp_flint.m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0);
-
-				// Outputs
-				bp_flint.m_CraftedResult = GetGearItemPrefab("GEAR_FlintAndSteel");
-				bp_flint.m_CraftedResultCount = 1;
-
-				// Process
-				bp_flint.m_Locked = false;
-				bp_flint.m_AppearsInStoryOnly = false;
-				bp_flint.m_RequiresLight = false;
-				bp_flint.m_RequiresLitFire = true;
-				bp_flint.m_RequiredCraftingLocation = CraftingLocation.Forge;
-				bp_flint.m_DurationMinutes = 360;
-				bp_flint.m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGGENERIC");
-				bp_flint.m_AppliedSkill = SkillType.ToolRepair;
-				bp_flint.m_ImprovedSkill = SkillType.None;
-
-
-				if (Settings.options.flintSmeltEnable)
-				{
-					// re-smelt one
-					BlueprintData bp_flint2 = new();
-					// Inputs
-					bp_flint2.m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
-                    {
-                        [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_FlintAndSteel") },
-                        [1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ScrapMetal") },
-                        [2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Coal") }
-                    };
-					bp_flint2.m_KeroseneLitersRequired = 0f;
-					bp_flint2.m_GunpowderKGRequired = 0f;
-					bp_flint2.m_RequiredTool = GetToolItemPrefab("GEAR_Hammer");
-					bp_flint2.m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0);
-
-					// Outputs
-					bp_flint2.m_CraftedResult = GetGearItemPrefab("GEAR_FlintAndSteel");
-					bp_flint2.m_CraftedResultCount = 1;
-
-					// Process
-					bp_flint2.m_Locked = false;
-					bp_flint2.m_AppearsInStoryOnly = false;
-					bp_flint2.m_RequiresLight = false;
-					bp_flint2.m_RequiresLitFire = true;
-					bp_flint2.m_RequiredCraftingLocation = CraftingLocation.Forge;
-					bp_flint2.m_DurationMinutes = 180;
-					bp_flint2.m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGGENERIC");
-					bp_flint2.m_AppliedSkill = SkillType.ToolRepair;
-					bp_flint2.m_ImprovedSkill = SkillType.None;
-				}
-			}
-		}
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
         public static Il2CppAK.Wwise.Event? MakeAudioEvent(string eventName)

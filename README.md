@@ -31,14 +31,7 @@ Additionally, each tinder have separated setting is to have different values for
 
 ### Flint and steel
 
-Flint is in game but hidden (and no icon) and normally is not crafteble nor lootable.
-However, Whetstone (sharpening stone) can be used as flint in real life.
-The steel part - this needs to be high carbon steel, and not aloys. In theory smelting prybar (which is hard steel) with coal will carbonize it.
-That (over simplistic) theory can actually give us flint and steel as firestarter.
-
-It's degredation should be keept low-ish - around 0.5-2 - as prybar and whetstone are rare and finite
-
-Also, if game had shovel as lootable, that could be more realistic "steel" coponent.
+(removed - see other mods)
 
 Thanks to [zeobviouslyfakeacc](https://github.com/zeobviouslyfakeacc/), and his [TinCanImprovemnts](https://github.com/zeobviouslyfakeacc/TinCanImprovements) mod for ability to create blueprints.
 

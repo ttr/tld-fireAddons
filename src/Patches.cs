@@ -4,6 +4,7 @@ using Il2Cpp;
 using Il2CppTLD.Gear;
 using MelonLoader;
 using Il2CppEpic.OnlineServices;
+using static FireAddons.Patches;
 
 
 namespace FireAddons
@@ -12,20 +13,20 @@ namespace FireAddons
     {
 
 
-        [HarmonyPatch(typeof(GameManager), "Awake")]
+        [HarmonyPatch(typeof(GameManager), nameof(GameManager.Awake))]
         internal class GameManager_Awake
         {
             public static void Prefix()
             {
                 if (!InterfaceManager.IsMainMenuEnabled())
                 {
-                    FireAddons.LoadAllFireData();
+                    FireAddons.LoadData();
                 }
             }
         }
 
 
-        [HarmonyPatch(typeof(GearItem), "Awake", null)]
+        [HarmonyPatch(typeof(GearItem), nameof(GearItem.Awake), null)]
         public class GearItem_Awake
         {
             private static void Postfix(GearItem __instance)
@@ -34,7 +35,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Panel_FeedFire), "OnFeedFire")]
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.OnFeedFire))]
         internal class Panel_FeedFire_OnFeedFire
         {
             private static void Postfix(Panel_FeedFire __instance)
@@ -43,12 +44,13 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Fire), "Update")]
+        [HarmonyPatch(typeof(Fire), nameof(Fire.Update))]
         internal class Fire_Update_Prefix
         {
             private static void Prefix(Fire __instance)
             {
-                if (!GameManager.m_IsPaused && Settings.options.embersSystem)
+                // the GetTimeof a day is neede as during scene chnage update is firing before full load
+                if (!GameManager.m_IsPaused && Settings.options.embersSystem && (GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled() != 0f))
                 {
                     FireAddons.CalculateEmbers(__instance);
 
@@ -56,7 +58,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Fire), "TurnOff")]
+        [HarmonyPatch(typeof(Fire), nameof(Fire.TurnOff))]
         internal class Fire_Turnoff_Postfix
         {
             private static void Postfix(Fire __instance)
@@ -69,7 +71,7 @@ namespace FireAddons
 
         }
         
-        [HarmonyPatch(typeof(FireManager), "CalculateFireStartSuccess")]
+        [HarmonyPatch(typeof(FireManager), nameof(FireManager.CalculateFireStartSuccess))]
         static class FireManager_CalculateFireStartSuccess
         {
             private static void Postfix(FireManager __instance, float __result)
@@ -83,7 +85,7 @@ namespace FireAddons
             }
         }
         
-        [HarmonyPatch(typeof(Panel_FireStart), "RefreshChanceOfSuccessLabel")]
+        [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.RefreshChanceOfSuccessLabel))]
         static class Panel_FireStart_RefreshChanceOfSuccessLabel
         {
             private static void Postfix(Panel_FireStart __instance)
@@ -103,7 +105,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Fire), "ExitFireStarting")]
+        [HarmonyPatch(typeof(Fire), nameof(Fire.ExitFireStarting))]
         static class Fire_ExitFireStarting
         {
             private static void Postfix(Fire __instance, ref bool success)
@@ -124,8 +126,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Panel_FireStart))]
-        [HarmonyPatch("RefreshList")]
+        [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.RefreshList))]
         static class PatchPanel_FireStart_RefreshList
         {
             private static void Prefix(Panel_FeedFire __instance)
@@ -155,7 +156,7 @@ namespace FireAddons
             }
         }
         // based on Fire_RV mod by Deus131
-        [HarmonyPatch(typeof(Panel_FeedFire), "RefreshFuelSources")]
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.RefreshFuelSources))]
         internal static class Panel_FeedFire_RefreshFuelSources
         {
             private static void Prefix(Panel_FeedFire __instance)
@@ -206,7 +207,7 @@ namespace FireAddons
 
         }
         
-        [HarmonyPatch(typeof(Panel_FireStart), "FilterItemFuelSource")]
+        [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.FilterItemFuelSource))]
         internal static class Panel_FireStart_FilterItemFuelSource
         {
             private static bool Prefix(Panel_FireStart __instance, GearItem gi, ref bool __result)
@@ -221,7 +222,7 @@ namespace FireAddons
                 return false;
             }
         }
-        [HarmonyPatch(typeof(Panel_FeedFire), "FilterItemFuelSource")]
+        [HarmonyPatch(typeof(Panel_FeedFire), nameof(Panel_FeedFire.FilterItemFuelSource))]
         internal static class Panel_FeedFire_FilterItemFuelSource
         {
             private static bool Prefix(Panel_FeedFire __instance, GameObject go, ref bool __result)
@@ -262,7 +263,7 @@ namespace FireAddons
             }
         }
         */
-        [HarmonyPatch(typeof(FireplaceInteraction), "GetHoverText")]
+        [HarmonyPatch(typeof(FireplaceInteraction), nameof(FireplaceInteraction.GetHoverText))]
         internal static class FireplaceInteraction_GetHoverText
         {
             public static void Postfix(WoodStove __instance, ref string __result)
@@ -289,7 +290,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(CookingPotItem), "AttachedFireIsBurning")]
+        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.AttachedFireIsBurning))]
         internal static class CookingPotItem_AttachedFireIsBurning
         {
             public static void Postfix(CookingPotItem __instance, ref bool __result)
@@ -301,7 +302,7 @@ namespace FireAddons
             }
         }
 
-        [HarmonyPatch(typeof(Fire), "IsBurning")]
+        [HarmonyPatch(typeof(Fire), nameof(Fire.IsBurning))]
         internal static class Fire_IsBurning
         {
             public static void Postfix(Fire __instance, ref bool __result)

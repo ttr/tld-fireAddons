@@ -16,7 +16,7 @@ namespace FireAddons
 
 
             coolFireBtnObj = GameObject.Instantiate<GameObject>(panel_FeedFire.m_ActionButtonObject, panel_FeedFire.m_ActionButtonObject.transform.parent, true);
-            coolFireBtnObj.transform.Translate(0, 0.09f, 0);
+            coolFireBtnObj.transform.Translate(0.20f, 0.18f, 0);
             Utils.GetComponentInChildren<UILabel>(coolFireBtnObj).text = "Cool fire";
 
             // Pass null there, because will try to get from last interacted.

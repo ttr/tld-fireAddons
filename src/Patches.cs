@@ -70,7 +70,7 @@ namespace FireAddons
             }
 
         }
-        
+
         [HarmonyPatch(typeof(FireManager), nameof(FireManager.CalculateFireStartSuccess))]
         static class FireManager_CalculateFireStartSuccess
         {
@@ -84,7 +84,7 @@ namespace FireAddons
                 }
             }
         }
-        
+
         [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.RefreshChanceOfSuccessLabel))]
         static class Panel_FireStart_RefreshChanceOfSuccessLabel
         {
@@ -206,7 +206,7 @@ namespace FireAddons
             }
 
         }
-        
+
         [HarmonyPatch(typeof(Panel_FireStart), nameof(Panel_FireStart.FilterItemFuelSource))]
         internal static class Panel_FireStart_FilterItemFuelSource
         {
@@ -233,36 +233,11 @@ namespace FireAddons
                 {
                     temp = true;
                 }
-                __result =  !(fuelSourceItem == null) && temp;
+                __result = !(fuelSourceItem == null) && temp;
                 return false;
             }
         }
-        /* not needed - below one covers all
-        [HarmonyPatch(typeof(Campfire), "GetHoverText")]
-        internal static class Campfire_GetHoverText
-        {
-            private static void Postfix(Campfire __instance, ref string __result)
-            {
-                
-                if (!__instance.Fire.m_IsPerpetual && __result != null && Settings.options.embersSystem && __instance.Fire.GetFireState() == FireState.FullBurn && __instance.Fire.m_EmberDurationSecondsTOD > 0 && __instance.Fire.m_EmberTimer >= 0)
-                {
-                    float emberDiff = __instance.Fire.m_EmberDurationSecondsTOD - __instance.Fire.m_EmberTimer;
-                    int emberH = (int)Mathf.Floor(emberDiff / 3600);
-                    int emberM = (int)((emberDiff - (emberH * 3600)) / 60);
-                    // those spaces are needed for 'canvas' as it's calculated based on 1st line lenght
-                    if (__instance.Fire.m_EmberTimer == 0)
-                    {
-                        string[] input = __result.Split('\n');
-                        __result = "      " + __instance.name.ToString() + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
-                    }
-                    else
-                    {
-                        __result = "      " + __instance.name.ToString() + "      \n" + Localization.Get("GAMEPLAY_Embers") + ": " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + __instance.Fire.GetHeatIncreaseText() + ")";
-                    }
-                }
-            }
-        }
-        */
+
         [HarmonyPatch(typeof(FireplaceInteraction), nameof(FireplaceInteraction.GetHoverText))]
         internal static class FireplaceInteraction_GetHoverText
         {
@@ -279,7 +254,7 @@ namespace FireAddons
                     string[] input = __result.Split('\n');
                     if (__instance.Fire.m_EmberTimer == 0)
                     {
-                        
+
                         __result = "      " + input[0] + "      \n" + input[1] + " & " + emberH.ToString() + "h " + emberM.ToString() + "m\n(" + input[2] + ")";
                     } else
                     {
@@ -295,6 +270,7 @@ namespace FireAddons
         {
             public static void Postfix(CookingPotItem __instance, ref bool __result)
             {
+                if (__instance.m_FireBeingUsed && __instance.m_FireBeingUsed.m_IsPerpetual) { return; } 
                 if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance.m_FireBeingUsed?.m_EmberTimer > 0)
                 {
                     __result = false;
@@ -307,6 +283,7 @@ namespace FireAddons
         {
             public static void Postfix(Fire __instance, ref bool __result)
             {
+                if (__instance.m_IsPerpetual) { return; }
                 if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance?.m_EmberTimer > 0)
                 {
                     __result = false;
@@ -314,5 +291,18 @@ namespace FireAddons
             }
         }
 
+        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.UpdateCookingTimeAndState))]
+        internal static class CookingPotItem_UpdateCookingTimeAndState {
+            public static void Prefix(CookingPotItem __instance, ref float cookTimeMinutes, ref float readyTimeMinutes)
+            {
+                if (Settings.options.cookingSystem && __instance.m_FireBeingUsed)
+                {
+                    cookTimeMinutes *= FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease());
+                    readyTimeMinutes *= FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease());
+                    //MelonLogger.Msg("Cooking speed2: " + cookTimeMinutes + " " + readyTimeMinutes + " " + FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()));
+                }
+            }
+
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace FireAddons
 	internal class FireAddons : MelonMod
 	{
 		private static List<string> fireFixed = new List<string>();
-		private static int FADSchema = 2;
+		private static int FADSchema = 3;
 		private static bool FADForceReload = false;
 		private static Dictionary<string, FireAddonsData> FAD = new Dictionary<string, FireAddonsData>();
         internal static ModDataManager SaveMgr = new ModDataManager("FireAddons", false);       
@@ -222,7 +222,8 @@ namespace FireAddons
 			FAD[guid].burnSeconds = __instance.m_ElapsedOnTODSeconds;
 			FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
 			FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
-			SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
+			FAD[guid].infinite = __instance.m_IsPerpetual;
+            SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
 
         }
 		private static void LoadFireData(Fire __instance, string guid)
@@ -237,6 +238,7 @@ namespace FireAddons
 				__instance.m_FuelHeatIncrease = FAD[guid].heatTemp;
 				__instance.m_HeatSource.m_MaxTempIncrease = FAD[guid].heatTemp;
 				__instance.m_HeatSource.m_TempIncrease = FAD[guid].heatTemp;
+				__instance.m_IsPerpetual = FAD[guid].infinite;
 				CalculateFireTimers(__instance, timeDiff, __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds, true);
 				
 				if (__instance.m_Campfire && (__instance.m_MaxOnTODSeconds > __instance.m_ElapsedOnTODSeconds || __instance.m_EmberDurationSecondsTOD > __instance.m_EmberTimer))
@@ -295,7 +297,7 @@ namespace FireAddons
 
 				/* Small word of explanation
 				 * this looks like it's underpowered as next one is ratio in hours and nowhere is converted to seconds
-				 * however deltatime is in seconds, so whole ember store would be burned in second, not hour and doing 2 converstion (delta time and varitBurnSec) just to look clear is insane
+				 * however deltatime is in seconds, so whole ember store would be burned in second, not hour and doing 2 converstion (delta time and varitBurnSec) just to look clear, feels insane
 				 */
 
 				// remove embers per timeDiff
@@ -333,11 +335,19 @@ namespace FireAddons
 		}
 		internal static void CalculateEmbers(Fire __instance)
 		{
-			if (!__instance.m_IsPerpetual)
+            string guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
+            if (__instance.m_IsPerpetual)
+			{
+				if (FAD.ContainsKey(guid)) {
+					WriteFireData(__instance, guid);
+					FAD.Remove(guid);
+					MelonLogger.Msg("Fire was switched to infinite - storing it's data: " + guid);
+				}
+            }
+			else
 			{
 				float deltaTime = GameManager.GetTimeOfDayComponent().GetTODSeconds(Time.deltaTime);
 				float remSec = __instance.m_MaxOnTODSeconds - __instance.m_ElapsedOnTODSeconds;
-				string guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
 
 				/* when time acceleration is active, all Update() functions are called, but in end thre is TodMaterial.UpdateAll()
 				 * which will calculate fire time twice.
@@ -458,7 +468,18 @@ namespace FireAddons
             {
 				_fire.m_NumGeneratedCharcoalPieces -= 1;
 			}
+		}
 
+		internal static float CookSpeedFromTemp(float temp)
+		{
+			// no complex conditions needed due to early returns.
+			if (!Settings.options.cookingSystem) { return 1; }
+			if (temp < Settings.options.cookingSystemTempMin) { return float.PositiveInfinity; }
+			if (temp < Settings.options.cookingSystemTempLow) { return Mathf.Lerp(Settings.options.cookingSystemTimeLow, 1f, Mathf.InverseLerp(Settings.options.cookingSystemTempMin, Settings.options.cookingSystemTempLow, temp)); }
+			if (temp <= Settings.options.cookingSystemTempHigh) { return 1; }
+			if (temp <= Settings.options.cookingSystemTempMax) { return Mathf.Lerp(1f, Settings.options.cookingSystemTimeHigh, Mathf.InverseLerp(Settings.options.cookingSystemTempHigh, Settings.options.cookingSystemTempMax, temp)); }
+			if (temp > Settings.options.cookingSystemTempMax) { return Settings.options.cookingSystemTimeHigh; }
+            return 1;
 		}
 	}
 	internal class FireAddonsData
@@ -471,5 +492,6 @@ namespace FireAddons
 		public float burnSeconds;
 		public float burnMaxSeconds;
 		public float heatTemp;
+		public bool infinite;
 	}
 }

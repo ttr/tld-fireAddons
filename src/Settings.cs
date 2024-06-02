@@ -1,5 +1,6 @@
 using ModSettings;
 using System.Reflection;
+using UnityEngine.UI;
 
 namespace FireAddons
 {
@@ -169,26 +170,90 @@ namespace FireAddons
 		[Description("Will disable cooking/boiling while stove/campfire is in 'ember state' when new ember/smoldering mechanic is used. Setting this to false, will make new mechanic useless and they will only 'extend burn time' (yet this ability was requiesed). Recommended: true.")]
 		public bool embersSystemNoCooking = true;
 
-		[Name("Use Charcoal as fuel")]
-		[Description("Allow using charcal as fuel. Set to false if other mod is adding charcoal as fuel")]
-		public bool burnCharcoal = true;
 
-		[Name("... burn time")]
-		[Description("Recommended 20 min.")]
-		[Slider(5, 40)]
-		public int burnCharcoalTime = 20;
+		[Section("Cooking Time")]
+		[Name("Enable cooking time based on temp.")]
+		[Description("Enabling this will allow to tune time of cooking based on temperature.")]
+		public bool cookingSystem = true;
 
-		[Name("... temp increase")]
-		[Description("Recommended 5 deg")]
-		[Slider(0, 15)]
-		public int burnCharcoalTemp = 5;
+		[Name("Minimal Cooking Temperature")]
+		[Description("Below this temperature, cooking will be impossible. 0 to disable.")]
+		[Slider(0,30)]
+		public int cookingSystemTempMin = 15;
+
+        [Name("Normal Low threshold")]
+        [Description("Temperature where 1x speed will start")]
+        [Slider(0, 80)]
+        public int cookingSystemTempLow = 25;
+
+        [Name("Normal High threshold")]
+        [Description("Temperature where 1x speed will ent")]
+        [Slider(0, 80)]
+        public int cookingSystemTempHigh = 40;
+
+        [Name("Maximal Boost Temperature")]
+        [Description("Temperature where maximum time boost is achievied.")]
+        [Slider(0, 80)]
+        public int cookingSystemTempMax = 60;
+
+        [Name("Low Temp time factor")]
+        [Description("Time factor at lowest possible cooking temperature")]
+        [Slider(1f, 5f, 41, NumberFormat = "{0:F1}")]
+        public float cookingSystemTimeLow = 3f;
+
+        [Name("High Temp time factor")]
+        [Description("Time factor at maximum boost temperature")]
+        [Slider(0.1f, 1f, 10, NumberFormat = "{0:F1}")]
+        public float cookingSystemTimeHigh = 0.7f;
+
+
+		[Section("Other")]
+        [Name("Use Charcoal as fuel")]
+        [Description("Allow using charcal as fuel. Set to false if other mod is adding charcoal as fuel")]
+        public bool burnCharcoal = true;
+
+        [Name("... burn time")]
+        [Description("Recommended 20 min.")]
+        [Slider(5, 40)]
+        public int burnCharcoalTime = 20;
+
+        [Name("... temp increase")]
+        [Description("Recommended 5 deg")]
+        [Slider(0, 15)]
+        public int burnCharcoalTemp = 5;
 
         protected override void OnChange(FieldInfo field, object oldValue, object newValue)
         {
-			RefreshFields();
-		}
+			if(field.Name == nameof(cookingSystemTempMin))
+			{
+				cookingSystemTempLow = Math.Max((int)newValue, cookingSystemTempLow);
+                cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
+                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+            }
+			else if (field.Name == nameof(cookingSystemTempLow))
+			{
+                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+                cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
+                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+            }
+			else if (field.Name == nameof(cookingSystemTempHigh))
+			{
+                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+                cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
+                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+            }
+			else if (field.Name == nameof(cookingSystemTempMax))
+			{
+                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+                cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
+                cookingSystemTempHigh = Math.Min((int)newValue, cookingSystemTempHigh);
+            }
 
-		internal void RefreshFields()
+            RefreshFields();
+			RefreshGUI();
+        }
+
+        internal void RefreshFields()
 		{
 			if (lanternUse)
 			{
@@ -268,7 +333,25 @@ namespace FireAddons
 				SetFieldVisible(nameof(burnCharcoalTime), false);
 				SetFieldVisible(nameof(burnCharcoalTemp), false);
 			}
-		}
+			if(cookingSystem)
+			{
+				SetFieldVisible(nameof(cookingSystemTempHigh), true);
+                SetFieldVisible(nameof(cookingSystemTempLow), true);
+                SetFieldVisible(nameof(cookingSystemTempMax), true);
+                SetFieldVisible(nameof(cookingSystemTempMin), true);
+                SetFieldVisible(nameof(cookingSystemTimeHigh), true);
+                SetFieldVisible(nameof(cookingSystemTimeLow), true);
+            }
+			else
+			{
+                SetFieldVisible(nameof(cookingSystemTempHigh), false);
+                SetFieldVisible(nameof(cookingSystemTempLow), false);
+                SetFieldVisible(nameof(cookingSystemTempMax), false);
+                SetFieldVisible(nameof(cookingSystemTempMin), false);
+                SetFieldVisible(nameof(cookingSystemTimeHigh), false);
+                SetFieldVisible(nameof(cookingSystemTimeLow), false);
+            }
+        }
 	}
 	internal static class Settings
 	{

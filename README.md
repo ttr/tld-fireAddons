@@ -59,5 +59,15 @@ When temperature of fire (heat increase) is above "Burnout temperature", ember t
 Embers timer is showed in hover card, next to burn time.
 Thanks to [Digitalzombie](https://github.com/DigitalzombieTLD) for help with hover card.
 
+### Cooking time
+Cooking time setteings can alter how temperature affect cooking.
+If Fire source is below "Minimal Cooking Temperature" cooking will not be happening (no time will be displayed in hovercard of cooking item).
+If temperature is above "Minimal Cooking Temperature" but below "Normal Low threshold" cooking time will be extended, by factor of linear scalling between "Low Temp time factor" and 1.
+If temperature is between "Normal Low threshold" and "Normal High threshold", cooking time is same as vanilla (factor of 1).
+If temperature is between "Normal High threshold" and "Maximal Boost Temperature", cooking time will be shorten, by factor of linear scalling between 1 and "High Temp time factor".
+Any temperature above will cause cooking to be scaled by "High Temp time factor" setting.
+
+This also applies to time until food will be ruined (burned), melting snow, boiling and boiling out water.
+
 ## Notes / Issues.
 Some code was based off [Deus13](https://github.com/Deus13/) [Fire_RV mod](https://github.com/Deus13/Fire_RV)

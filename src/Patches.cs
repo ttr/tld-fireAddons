@@ -40,7 +40,8 @@ namespace FireAddons
         {
             private static void Postfix(Panel_FeedFire __instance)
             {
-                FireAddons.FeedFire(__instance);
+                if (Settings.options.embersSystem) { FireAddons.FeedFireEmbers(__instance); };
+                if (Settings.options.burnCharcoal) { FireAddons.FeedFireCharoal(__instance); };
             }
         }
 

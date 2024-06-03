@@ -271,10 +271,19 @@ namespace FireAddons
         {
             public static void Postfix(CookingPotItem __instance, ref bool __result)
             {
-                if (__instance.m_FireBeingUsed && __instance.m_FireBeingUsed.m_IsPerpetual) { return; } 
-                if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance.m_FireBeingUsed?.m_EmberTimer > 0)
+                if (__instance.m_FireBeingUsed)
                 {
-                    __result = false;
+                    if (__instance.m_FireBeingUsed.m_IsPerpetual) { return; }
+                    if (Settings.options.embersSystem && Settings.options.embersSystemNoCooking && __result && __instance.m_FireBeingUsed.m_EmberTimer > 0)
+                    {
+                        __result = false;
+                    }
+                    /* this will work but will prevent using placed items on stove
+                    if (Settings.options.cookingSystem && __result && FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()) == float.PositiveInfinity)
+                    {
+                        __result = false;
+                    }
+                    */
                 }
             }
         }
@@ -298,6 +307,11 @@ namespace FireAddons
             {
                 if (Settings.options.cookingSystem && __instance.m_FireBeingUsed)
                 {
+                    if (FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()) == float.PositiveInfinity && __instance.AttachedFireIsBurning())
+                    {
+                        // roll-back cooking counter as temp is too low
+                        __instance.m_CookingElapsedHours -= GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
+                    }
                     cookTimeMinutes *= FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease());
                     readyTimeMinutes *= FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease());
                     //MelonLogger.Msg("Cooking speed2: " + cookTimeMinutes + " " + readyTimeMinutes + " " + FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()));

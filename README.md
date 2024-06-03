@@ -68,6 +68,8 @@ If temperature is between "Normal High threshold" and "Maximal Boost Temperature
 Any temperature above will cause cooking to be scaled by "High Temp time factor" setting.  
 
 This also applies to time until food will be ruined (burned), melting snow, boiling and boiling out water.
+
+Additionally, keeping cooked and hot item on a stove while it's below "Minimal Cooking Temperature" will keep an item hot.  
 ![Cooking time](https://raw.githubusercontent.com/ttr/tld-fireAddons/master/media/cooking.png)
 
 ## Notes / Issues.

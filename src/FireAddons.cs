@@ -439,16 +439,16 @@ namespace FireAddons
 				//MelonLogger.Msg(guid + " capping charcoal to 0 from " + tmp);
 			}
 		}
-		internal static void FeedFire(Panel_FeedFire __instance)
+		internal static void FeedFireEmbers(Panel_FeedFire __instance)
 		{
-			
+
 			Fire _fire = __instance.m_FireplaceInteraction.Fire;
 			string guid = ObjectGuid.GetGuidFromGameObject(_fire.gameObject);
 			GearItem fuel = __instance.GetSelectedFuelSource();
 
 			// added fuel while embers
-			if (_fire.m_EmberTimer > 0f )
-            {
+			if (_fire.m_EmberTimer > 0f)
+			{
 				ResetEmbersOnRestart(_fire);
 			}
 			// try add fuel to embers unless it wasn't comming out from ember state; only for certian fuels
@@ -463,8 +463,15 @@ namespace FireAddons
 
 				}
 			}
-			// If charcoal was added, hack charcoal values
-			if (fuel.name.ToLower().StartsWith("gear_charcoal"))
+		}
+        internal static void FeedFireCharoal(Panel_FeedFire __instance)
+        {
+
+            Fire _fire = __instance.m_FireplaceInteraction.Fire;
+            GearItem fuel = __instance.GetSelectedFuelSource();
+
+            // If charcoal was added, hack charcoal values
+            if (fuel.name.ToLower().StartsWith("gear_charcoal"))
             {
 				_fire.m_NumGeneratedCharcoalPieces -= 1;
 			}

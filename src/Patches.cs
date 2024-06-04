@@ -317,7 +317,20 @@ namespace FireAddons
                     //MelonLogger.Msg("Cooking speed2: " + cookTimeMinutes + " " + readyTimeMinutes + " " + FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()));
                 }
             }
-
+        }
+        [HarmonyPatch(typeof(CookingPotItem), nameof(CookingPotItem.DoSpecialActionFromInspectMode))]
+        internal static class CookingPotItem_DoSpecialActionFromInspectMode
+        {
+            public static bool Prefix(CookingPotItem __instance, ref float volumeAvailable)
+            {
+                if (__instance.m_CookingState == CookingPotItem.CookingState.Cooking && __instance.AttachedFireIsBurning() && Settings.options.cookingSystem && FireAddons.CookSpeedFromTemp(__instance.m_FireBeingUsed.GetCurrentTempIncrease()) == float.PositiveInfinity)
+                {
+                    GameAudioManager.PlayGUIError();
+                    HUDMessage.AddMessage("Fire temperature too low", false, false);
+                    return false;
+                }
+                return true;
+            }
         }
     }
 }

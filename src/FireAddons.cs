@@ -16,15 +16,15 @@ namespace FireAddons
 		private static int FADSchema = 3;
 		private static bool FADForceReload = false;
 		private static Dictionary<string, FireAddonsData> FAD = new Dictionary<string, FireAddonsData>();
-        internal static ModDataManager SaveMgr = new ModDataManager("FireAddons", false);       
+    internal static ModDataManager SaveMgr = new ModDataManager("FireAddons", false);       
 
-        public override void OnApplicationStart()
+    public override void OnInitializeMelon()
 		{
 			Debug.Log($"[{Info.Name}] Version {Info.Version} loaded!");
 			Settings.OnLoad();
 		}
         
-        internal static void LoadData()
+    internal static void LoadData()
 		{
 			FAD.Clear();
 			fireFixed.Clear();
@@ -38,13 +38,13 @@ namespace FireAddons
                 FAD = JSON.Load(data).Make<Dictionary<string, FireAddonsData>>();
 			}
 		}
-
+/*
 		internal static void SaveData()
 		{
 			string data = JSON.Dump(FAD, EncodeOptions.NoTypeHints);
 			SaveMgr.Save(data, "FAD");
 		}
-
+*/
 		internal static float GetModifiedFireStartSkillModifier(FuelSourceItem fs)
 		{
 
@@ -187,45 +187,45 @@ namespace FireAddons
 
 		private static GearItem GetGearItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<GearItem>();
 		private static ToolsItem GetToolItemPrefab(string name) => Resources.Load(name).Cast<GameObject>().GetComponent<ToolsItem>();
-        public static Il2CppAK.Wwise.Event? MakeAudioEvent(string eventName)
-        {
-            if (eventName == null)
-            {
-                return null;
-            }
-            uint eventId = AkSoundEngine.GetIDFromString(eventName);
-            if (eventId <= 0 || eventId >= 4294967295)
-            {
-                return null;
-            }
+    public static Il2CppAK.Wwise.Event? MakeAudioEvent(string eventName)
+    {
+      if (eventName == null)
+      {
+        return null;
+      }
+      uint eventId = AkSoundEngine.GetIDFromString(eventName);
+      if (eventId <= 0 || eventId >= 4294967295)
+      {
+        return null;
+      }
 
-            Il2CppAK.Wwise.Event newEvent = new();
-            newEvent.WwiseObjectReference = new WwiseEventReference();
-            newEvent.WwiseObjectReference.objectName = eventName;
-            newEvent.WwiseObjectReference.id = eventId;
-            return newEvent;
-        }
+      Il2CppAK.Wwise.Event newEvent = new();
+      newEvent.WwiseObjectReference = new WwiseEventReference();
+      newEvent.WwiseObjectReference.objectName = eventName;
+      newEvent.WwiseObjectReference.id = eventId;
+      return newEvent;
+    }
 
-        private static void WriteFireData(Fire __instance, string guid)
-        {
-			// create new instance if needed
-			if (!FAD.ContainsKey(guid))
-			{
-				FireAddonsData lFAD = new FireAddonsData();
-				FAD.Add(guid, lFAD);
-			}
-			FAD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
-			FAD[guid].ver = FADSchema;
-			FAD[guid].fireState = __instance.GetFireState().ToString();
-			FAD[guid].embersSeconds = __instance.m_EmberDurationSecondsTOD;
-			FAD[guid].emberTimer = __instance.m_EmberTimer;
-			FAD[guid].burnSeconds = __instance.m_ElapsedOnTODSeconds;
-			FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
-			FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
-			FAD[guid].infinite = __instance.m_IsPerpetual;
-            SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
+    private static void WriteFireData(Fire __instance, string guid)
+    {
+      // create new instance if needed
+      if (!FAD.ContainsKey(guid))
+      {
+        FireAddonsData lFAD = new FireAddonsData();
+        FAD.Add(guid, lFAD);
+      }
+      FAD[guid].timestamp = GameManager.GetTimeOfDayComponent().GetTODSeconds(GameManager.GetTimeOfDayComponent().GetSecondsPlayedUnscaled());
+      FAD[guid].ver = FADSchema;
+      FAD[guid].fireState = __instance.GetFireState().ToString();
+      FAD[guid].embersSeconds = __instance.m_EmberDurationSecondsTOD;
+      FAD[guid].emberTimer = __instance.m_EmberTimer;
+      FAD[guid].burnSeconds = __instance.m_ElapsedOnTODSeconds;
+      FAD[guid].burnMaxSeconds = __instance.m_MaxOnTODSeconds;
+      FAD[guid].heatTemp = __instance.m_HeatSource.m_MaxTempIncrease;
+      FAD[guid].infinite = __instance.m_IsPerpetual;
+      SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
+    }
 
-        }
 		private static void LoadFireData(Fire __instance, string guid)
         {
 			if (FAD.ContainsKey(guid))
@@ -247,14 +247,13 @@ namespace FireAddons
 				}
 				MelonLogger.Msg("restore " + guid + " burn:" + __instance.m_ElapsedOnTODSeconds + " max:" + __instance.m_MaxOnTODSeconds + " embers:" + __instance.m_EmberDurationSecondsTOD + " ember timer:" + __instance.m_EmberTimer + " reduce2:" + __instance.m_DurationSecondsToReduceToEmbers + " state:" + __instance.GetFireState().ToString() + " tdiff:" + timeDiff);
 			}
-
 		}
 
 		private static void RemoveFireData(Fire __instance, string guid)
-        {
+    {
 			FAD.Remove(guid);
-            SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
-        }
+      SaveMgr.Save(JSON.Dump(FAD, EncodeOptions.NoTypeHints), "FAD");
+    }
 		private static void ResetEmbersOnRestart(Fire __instance)
         {
 			if ( __instance.m_EmberDurationSecondsTOD > __instance.m_EmberTimer)
@@ -313,8 +312,8 @@ namespace FireAddons
 			}
 		}
 
-        private static void ApplyStoredFAD(Fire __instance, string guid)
-        {
+		private static void ApplyStoredFAD(Fire __instance, string guid)
+		{
 			if (FAD.ContainsKey(guid))
 			{
 				if (FAD[guid].ver == FADSchema)
@@ -336,6 +335,14 @@ namespace FireAddons
 		internal static void CalculateEmbers(Fire __instance)
 		{
             string guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
+			if (guid == null)
+			{
+				// if you move forge with SC+, it's GUID is gone.
+				ObjectGuid.MaybeAttachObjectGuidAddOrReplace(__instance.gameObject, Guid.NewGuid().ToString());
+				guid = ObjectGuid.GetGuidFromGameObject(__instance.gameObject);
+				MelonLogger.Msg("New Guid generated " + guid);
+			}
+			
             if (__instance.m_IsPerpetual)
 			{
 				if (FAD.ContainsKey(guid)) {

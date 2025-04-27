@@ -181,88 +181,86 @@ namespace FireAddons
 		[Slider(0,30)]
 		public int cookingSystemTempMin = 15;
 
-        [Name("Normal Low threshold")]
-        [Description("Temperature where 1x speed will start")]
-        [Slider(0, 80)]
-        public int cookingSystemTempLow = 25;
+    [Name("Normal Low threshold")]
+    [Description("Temperature where 1x speed will start")]
+    [Slider(0, 80)]
+    public int cookingSystemTempLow = 25;
 
-        [Name("Normal High threshold")]
-        [Description("Temperature where 1x speed will ent")]
-        [Slider(0, 80)]
-        public int cookingSystemTempHigh = 40;
+    [Name("Normal High threshold")]
+    [Description("Temperature where 1x speed will ent")]
+    [Slider(0, 80)]
+    public int cookingSystemTempHigh = 40;
 
-        [Name("Maximal Boost Temperature")]
-        [Description("Temperature where maximum time boost is achievied.")]
-        [Slider(0, 80)]
-        public int cookingSystemTempMax = 60;
+    [Name("Maximal Boost Temperature")]
+    [Description("Temperature where maximum time boost is achievied.")]
+    [Slider(0, 80)]
+    public int cookingSystemTempMax = 60;
 
-        [Name("Low Temp time factor")]
-        [Description("Time factor at lowest possible cooking temperature")]
-        [Slider(1f, 5f, 41, NumberFormat = "{0:F1}")]
-        public float cookingSystemTimeLow = 3f;
+    [Name("Low Temp time factor")]
+    [Description("Time factor at lowest possible cooking temperature")]
+    [Slider(1f, 5f, 41, NumberFormat = "{0:F1}")]
+    public float cookingSystemTimeLow = 3f;
 
-        [Name("High Temp time factor")]
-        [Description("Time factor at maximum boost temperature")]
-        [Slider(0.1f, 1f, 10, NumberFormat = "{0:F1}")]
-        public float cookingSystemTimeHigh = 0.7f;
+    [Name("High Temp time factor")]
+    [Description("Time factor at maximum boost temperature")]
+    [Slider(0.1f, 1f, 10, NumberFormat = "{0:F1}")]
+    public float cookingSystemTimeHigh = 0.7f;
 
 
 		[Section("Other")]
-        [Name("Use Charcoal as fuel")]
-        [Description("Allow using charcal as fuel. Set to false if other mod is adding charcoal as fuel")]
-        public bool burnCharcoal = true;
+    [Name("Use Charcoal as fuel")]
+    [Description("Allow using charcal as fuel. Set to false if other mod is adding charcoal as fuel")]
+    public bool burnCharcoal = true;
 
-        [Name("... burn time")]
-        [Description("Recommended 20 min.")]
-        [Slider(5, 40)]
-        public int burnCharcoalTime = 20;
+    [Name("... burn time")]
+    [Description("Recommended 20 min.")]
+    [Slider(5, 40)]
+    public int burnCharcoalTime = 20;
 
-        [Name("... temp increase")]
-        [Description("Recommended 5 deg")]
-        [Slider(0, 15)]
-        public int burnCharcoalTemp = 5;
+    [Name("... temp increase")]
+    [Description("Recommended 5 deg")]
+    [Slider(0, 15)]
+    public int burnCharcoalTemp = 5;
 
-        protected override void OnChange(FieldInfo field, object oldValue, object newValue)
-        {
+    protected override void OnChange(FieldInfo field, object oldValue, object newValue)
+    {
 			if(field.Name == nameof(cookingSystemTempMin))
 			{
 				cookingSystemTempLow = Math.Max((int)newValue, cookingSystemTempLow);
-                cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
-                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
-            }
+        cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
+        cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+      }
 			else if (field.Name == nameof(cookingSystemTempLow))
 			{
-                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
-                cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
-                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
-            }
+        cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+        cookingSystemTempHigh = Math.Max((int)newValue, cookingSystemTempHigh);
+        cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+      }
 			else if (field.Name == nameof(cookingSystemTempHigh))
 			{
-                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
-                cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
-                cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
-            }
+        cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+        cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
+        cookingSystemTempMax = Math.Max((int)newValue, cookingSystemTempMax);
+      }
 			else if (field.Name == nameof(cookingSystemTempMax))
 			{
-                cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
-                cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
-                cookingSystemTempHigh = Math.Min((int)newValue, cookingSystemTempHigh);
-            }
+        cookingSystemTempMin = Math.Min((int)newValue, cookingSystemTempMin);
+        cookingSystemTempLow = Math.Min((int)newValue, cookingSystemTempLow);
+        cookingSystemTempHigh = Math.Min((int)newValue, cookingSystemTempHigh);
+      }
 
-            RefreshFields();
+      RefreshFields();
 			RefreshGUI();
-        }
+    }
 
-        internal void RefreshFields()
+    internal void RefreshFields()
 		{
 			if (lanternUse)
 			{
-
 				SetFieldVisible(nameof(lanternStartFire), true);
 				SetFieldVisible(nameof(lanternStartTorch), true);
 				SetFieldVisible(nameof(lanternPenalty), true);
 				SetFieldVisible(nameof(lanternDegredation), true);
-
 			}
 			else
 			{
@@ -282,7 +280,7 @@ namespace FireAddons
 				SetFieldVisible(nameof(tinderFueldeg), false);
 			}
 			if (tinderMatters)
-            {
+      {
 				SetFieldVisible(nameof(tinderBonusPlug), true);
 				SetFieldVisible(nameof(tinderBonusPaper), true);
 				SetFieldVisible(nameof(tinderBonusNewsprintRoll), true);
@@ -303,7 +301,7 @@ namespace FireAddons
 
 			}
 			if (embersSystem)
-            {
+      {
 				SetFieldVisible(nameof(embersTime), true);
 				SetFieldVisible(nameof(embersBunoutTemp), true);
 				SetFieldVisible(nameof(embersBunoutRatio), true);
@@ -313,7 +311,7 @@ namespace FireAddons
 				SetFieldVisible(nameof(embersSystemNoCooking), true);
 			}
 			else
-            {
+      {
 				SetFieldVisible(nameof(embersTime), false);
 				SetFieldVisible(nameof(embersBunoutTemp), false);
 				SetFieldVisible(nameof(embersBunoutRatio), false);
@@ -324,38 +322,38 @@ namespace FireAddons
 
 			}
 			if (burnCharcoal)
-            {
+      {
 				SetFieldVisible(nameof(burnCharcoalTime), true);
 				SetFieldVisible(nameof(burnCharcoalTemp), true);
 			}
 			else
-            {
+      {
 				SetFieldVisible(nameof(burnCharcoalTime), false);
 				SetFieldVisible(nameof(burnCharcoalTemp), false);
 			}
 			if(cookingSystem)
 			{
 				SetFieldVisible(nameof(cookingSystemTempHigh), true);
-                SetFieldVisible(nameof(cookingSystemTempLow), true);
-                SetFieldVisible(nameof(cookingSystemTempMax), true);
-                SetFieldVisible(nameof(cookingSystemTempMin), true);
-                SetFieldVisible(nameof(cookingSystemTimeHigh), true);
-                SetFieldVisible(nameof(cookingSystemTimeLow), true);
-            }
-			else
+        SetFieldVisible(nameof(cookingSystemTempLow), true);
+        SetFieldVisible(nameof(cookingSystemTempMax), true);
+        SetFieldVisible(nameof(cookingSystemTempMin), true);
+        SetFieldVisible(nameof(cookingSystemTimeHigh), true);
+        SetFieldVisible(nameof(cookingSystemTimeLow), true);
+      }
+      else
 			{
-                SetFieldVisible(nameof(cookingSystemTempHigh), false);
-                SetFieldVisible(nameof(cookingSystemTempLow), false);
-                SetFieldVisible(nameof(cookingSystemTempMax), false);
-                SetFieldVisible(nameof(cookingSystemTempMin), false);
-                SetFieldVisible(nameof(cookingSystemTimeHigh), false);
-                SetFieldVisible(nameof(cookingSystemTimeLow), false);
-            }
-        }
+        SetFieldVisible(nameof(cookingSystemTempHigh), false);
+        SetFieldVisible(nameof(cookingSystemTempLow), false);
+        SetFieldVisible(nameof(cookingSystemTempMax), false);
+        SetFieldVisible(nameof(cookingSystemTempMin), false);
+        SetFieldVisible(nameof(cookingSystemTimeHigh), false);
+        SetFieldVisible(nameof(cookingSystemTimeLow), false);
+      }
+    }
 	}
 	internal static class Settings
 	{
-		public static FireAddonsSettings options;
+		public static FireAddonsSettings options = new();
 		public static void OnLoad()
 		{
 			options = new FireAddonsSettings();

@@ -39,6 +39,7 @@
 	</ItemGroup>
 
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y FireAddons.dll "D:\Games\SteamLibrary\steamapps\common\TheLongDark\Mods\"</PostBuildEvent>
+    <!-- for windows: xcopy /y FireAddons.dll "D:\Games\SteamLibrary\steamapps\common\TheLongDark\Mods\" -->
+    <PostBuildEvent>cp FireAddons.dll /mnt/steam-nvme/SteamLibrary/steamapps/common/TheLongDark/Mods/ </PostBuildEvent>
   </PropertyGroup>
 </Project>
